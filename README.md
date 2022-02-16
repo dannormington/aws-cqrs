@@ -7,6 +7,7 @@ This implementation is based off of Greg Young's Simple CQRS C# example
 located at https://github.com/gregoryyoung/m-r
 
 ## AWS Technologies
-- DynamoDb
+- AWS Java SDK v2
+- DynamoDB
 - SQS
 - Lambda
