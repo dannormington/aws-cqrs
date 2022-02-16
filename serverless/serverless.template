@@ -1,0 +1,68 @@
+{
+  "Description": "Simple Bank account service.",
+  "Resources": {
+    "PostCreateAccount": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "com.aws.cqrs.serverless.function.PostCreateAccount",
+        "Runtime" : "java8",
+        "CodeUri" : "./target/serverless-1.0.0.jar",
+        "Policies": [
+          "AmazonDynamoDBFullAccess",
+          "AmazonS3FullAccess"
+        ],
+        "Events": {
+          "PutResource": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/",
+              "Method": "post"
+            }
+          }
+        }
+      }
+    },
+    "PostAccountDeposit": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "com.aws.cqrs.serverless.function.PostAccountDeposit",
+        "Runtime" : "java8",
+        "CodeUri" : "./target/serverless-1.0.0.jar",
+        "Policies": [
+          "AmazonDynamoDBFullAccess",
+          "AmazonS3FullAccess"
+        ],
+        "Events": {
+          "PutResource": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/",
+              "Method": "post"
+            }
+          }
+        }
+      }
+    },
+    "PostAccountWithdraw": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "com.aws.cqrs.serverless.function.PostAccountWithdraw",
+        "Runtime" : "java8",
+        "CodeUri" : "./target/serverless-1.0.0.jar",
+        "Policies": [
+          "AmazonDynamoDBFullAccess",
+          "AmazonS3FullAccess"
+        ],
+        "Events": {
+          "PutResource": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/",
+              "Method": "post"
+            }
+          }
+        }
+      }
+    }
+  }
+}
