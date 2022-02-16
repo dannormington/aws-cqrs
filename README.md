@@ -13,4 +13,4 @@ located at https://github.com/gregoryyoung/m-r
 - Lambda
 
 ## TODO
-- Add handlers to manage SQS to manage read tables.
+- Add handlers to update read tables based on SQS messages.
