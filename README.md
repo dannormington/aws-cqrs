@@ -13,4 +13,6 @@ located at https://github.com/gregoryyoung/m-r
 - Lambda
 
 ## TODO
+- Add condition checks to ensure uniqueness when persisting to event store.
+- Add exception handling when querying/persisting to DynamoDB.
 - Add handlers to update read tables based on SQS messages.
