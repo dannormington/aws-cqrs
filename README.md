@@ -11,3 +11,6 @@ located at https://github.com/gregoryyoung/m-r
 - DynamoDB
 - SQS
 - Lambda
+
+## TODO
+- Add handlers to manage SQS to manage read tables.
