@@ -1,7 +1,7 @@
 AWS / CQRS with Event Sourcing
 =========================
 
-CQRS pattern implemented using AWS technologies. The example code includes both a base set of classes as well as a sample domain model, commands, events, and set of Lambdas.
+CQRS pattern implemented using AWS technologies. The example code includes both a set of base classes as well as a sample domain model, commands, events, and set of Lambdas.
 
 This implementation is based off of Greg Young's Simple CQRS C# example
 located at https://github.com/gregoryyoung/m-r
@@ -11,3 +11,9 @@ located at https://github.com/gregoryyoung/m-r
 - DynamoDB
 - SQS
 - Lambda
+
+## TODO
+- Add condition checks to ensure uniqueness when persisting to event store.
+- Add exception handling when querying/persisting to DynamoDB.
+- Add DynamoDB stream to publish to SQS thus eliminating logic needed to manually publish events.
+- Add handlers to update read tables based on SQS messages.
