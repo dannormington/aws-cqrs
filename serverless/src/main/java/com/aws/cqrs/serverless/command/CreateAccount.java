@@ -2,7 +2,10 @@ package com.aws.cqrs.serverless.command;
 
 import com.aws.cqrs.core.messaging.Command;
 
-public class CreateAccount implements Command {
+import java.io.Serializable;
+import java.util.UUID;
+
+public class CreateAccount implements Command, Serializable {
 	private String firstName;
 	private String lastName;
 

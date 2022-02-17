@@ -9,8 +9,6 @@ import java.util.UUID;
 
 public class Deposited extends Transaction {
 
-	private static final long serialVersionUID = 1L;
-
 	/**
 	 * Default Constructor for serialization.
 	 */

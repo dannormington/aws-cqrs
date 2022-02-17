@@ -10,15 +10,13 @@ public abstract class AggregateException extends Exception {
 
 	private static final String ERROR_FORMAT = "Aggregate Id : %s - Message: %s";
 
-	private static final long serialVersionUID = 1L;
-
-	private UUID aggregateId;
+	private final UUID aggregateId;
 
 	/**
 	 * Constructor
 	 * 
-	 * @param aggregateId
-	 * @param message
+	 * @param aggregateId The aggregate id.
+	 * @param message The error message.
 	 */
 	protected AggregateException(UUID aggregateId, String message) {
 		super(message);
@@ -28,9 +26,9 @@ public abstract class AggregateException extends Exception {
 	/**
 	 * Constructor
 	 * 
-	 * @param source
-	 * @param aggregateId
-	 * @param message
+	 * @param source The source of the exception.
+	 * @param aggregateId The aggregate id.
+	 * @param message The error message.
 	 */
 	protected AggregateException(Throwable source, UUID aggregateId, String message) {
 		super(message, source);
@@ -38,9 +36,9 @@ public abstract class AggregateException extends Exception {
 	}
 
 	/**
-	 * Get the aggregate Id
+	 * Get the aggregate id.
 	 * 
-	 * @return
+	 * @return The aggregate id.
 	 */
 	public UUID getAggregateId() {
 		return aggregateId;

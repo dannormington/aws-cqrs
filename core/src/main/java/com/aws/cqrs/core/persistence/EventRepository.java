@@ -18,19 +18,19 @@ public class EventRepository<T extends AggregateRoot> implements Repository<T> {
 	/**
 	 * Instance of the event store
 	 */
-	private EventStore eventStore;
+	private final EventStore eventStore;
 
 	/**
-	 * The class type that the repository is working with
+	 * The class type that the repository is working with.
 	 */
-	private Class<T> aClass;
+	private final Class<T> aClass;
 
 	/**
 	 * Default Constructor
 	 * 
-	 * @param aClass
-	 * @param tableName
-	 * @param queueName
+	 * @param aClass The type the repository is working with.
+	 * @param tableName The name of the table.
+	 * @param queueName The name of the queue to publish messages to.
 	 */
 	public EventRepository(Class<T> aClass, String tableName, String queueName) {
 		this.aClass = aClass;

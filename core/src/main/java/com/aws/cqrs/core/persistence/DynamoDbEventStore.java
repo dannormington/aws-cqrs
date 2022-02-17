@@ -1,71 +1,51 @@
 package com.aws.cqrs.core.persistence;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import com.aws.cqrs.core.exceptions.AggregateNotFoundException;
 import com.aws.cqrs.core.exceptions.EventCollisionException;
 import com.aws.cqrs.core.exceptions.HydrationException;
 import com.aws.cqrs.core.messaging.Event;
+import com.aws.cqrs.core.messaging.SqsEventBus;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
 import software.amazon.awssdk.enhanced.dynamodb.*;
+import software.amazon.awssdk.enhanced.dynamodb.model.ConditionCheck;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.TransactWriteItemsEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 import software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException;
-import software.amazon.awssdk.services.sqs.SqsClient;
-import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
-import software.amazon.awssdk.services.sqs.model.GetQueueUrlResponse;
-import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequest;
-import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequestEntry;
+import software.amazon.awssdk.services.sqs.model.*;
 
 public class DynamoDbEventStore implements EventStore {
-
-	/**
-	 * The name of the table to persist the events.
-	 */
 	private final String tableName;
-
-	/**
-	 * the name of the queue to publish events to.
-	 */
-	private final String queueName;
-
-	/**
-	 * The enhanced DB client
-	 */
 	private final DynamoDbEnhancedClient enhancedClient;
-
-	/**
-	 * The gson instance.
-	 */
-	private final Gson gson;
+	private final Gson gson = new Gson();
+	private final SqsEventBus eventBus;
+	private static final TableSchema<EventModel> eventModelSchema = TableSchema.fromBean(EventModel.class);
 
 	public DynamoDbEventStore(String tableName, String queueName) {
 		this.tableName = tableName;
-		this.queueName = queueName;
-		this.gson = new Gson();
 		enhancedClient = DynamoDbEnhancedClient.create();
+		eventBus = new SqsEventBus(queueName);
 	}
 
 	@Override
 	public void saveEvents(UUID aggregateId, long expectedVersion, Iterable<Event> events)
 			throws EventCollisionException {
 
-		DynamoDbTable<EventModel> eventStoreTable = enhancedClient.table(tableName,
-				TableSchema.fromBean(EventModel.class));
+		DynamoDbTable<EventModel> eventStoreTable = enhancedClient.table(tableName, eventModelSchema);
 
+		// Ensure that the Id and Version are unique
 		//Expression expression = Expression.builder().expression("(attribute_not_exists(Id) and attribute_not_exists(Version))").build();
 		//ConditionCheck<EventModel> conditionCheck = ConditionCheck.builder().conditionExpression(expression).build();
 		//TransactWriteItemsEnhancedRequest.Builder requestBuilder = TransactWriteItemsEnhancedRequest.builder().addConditionCheck(eventStoreTable,conditionCheck);
+
 		TransactWriteItemsEnhancedRequest.Builder requestBuilder = TransactWriteItemsEnhancedRequest.builder();
 
 		// Add each event to the batch.
-		List<SendMessageBatchRequestEntry> entries = new ArrayList<SendMessageBatchRequestEntry>();
+		List<SendMessageBatchRequestEntry> entries = new ArrayList<>();
 		String groupId = UUID.randomUUID().toString();
 
 		for (Event event : events) {
@@ -80,17 +60,23 @@ public class DynamoDbEventStore implements EventStore {
 			// Put the item in the request
 			requestBuilder.addPutItem(eventStoreTable, eventModel);
 
+			Map<String, MessageAttributeValue> attributes = new HashMap<>();
+			attributes.put("messageType", MessageAttributeValue.builder().dataType("String").stringValue(eventModel.getKind()).build());
+
 			// Create an SQS message and add it to the list.
 			entries.add(SendMessageBatchRequestEntry.builder()
 					.id(UUID.randomUUID().toString())
 					.messageDeduplicationId(UUID.randomUUID().toString())
 					.messageGroupId(groupId)
+					.messageAttributes(attributes)
 					.messageBody(eventModel.getEvent()).build());
 		}
 
+		// Persist to the event store
 		enhancedClient.transactWriteItems(requestBuilder.build());
 
-		publishEvents(entries);
+		// Publish the events to the queue
+		eventBus.publishEvents(entries);
 	}
 
 	@Override
@@ -99,22 +85,21 @@ public class DynamoDbEventStore implements EventStore {
 		Iterator<EventModel> events = getAggregateEvents(aggregateId);
 
 		// Deserialize the json from each domain event.
-		return hydrateDomainEvents(aggregateId, events);
+		return getDomainEvents(aggregateId, events);
 	}
 
 	/**
-	 * Get all of the records for a specific aggregate id.
+	 * Get all the records for a specific aggregate id.
 	 * 
-	 * @param aggregateId
-	 * @return
+	 * @param aggregateId The aggregate Id.
+	 * @return All the events for a specific aggregate Id.
 	 * @throws AggregateNotFoundException
 	 * @throws HydrationException
 	 */
 	private Iterator<EventModel> getAggregateEvents(UUID aggregateId)
 			throws AggregateNotFoundException, HydrationException {
 
-		DynamoDbTable<EventModel> eventStoreTable = enhancedClient.table(tableName,
-				TableSchema.fromBean(EventModel.class));
+		DynamoDbTable<EventModel> eventStoreTable = enhancedClient.table(tableName, eventModelSchema);
 
 		QueryConditional queryConditional = QueryConditional
 				.keyEqualTo(Key.builder().partitionValue(aggregateId.toString()).build());
@@ -129,18 +114,18 @@ public class DynamoDbEventStore implements EventStore {
 	}
 
 	/**
-	 * Loop through all of the events and deserialize the json into their respective
+	 * Loop through all the events and deserialize the json into their respective
 	 * types.
 	 * 
-	 * @params aggregateId
-	 * @param eventModels
+	 * @param aggregateId The aggregate's id.
+	 * @param eventModels The list of events.
 	 * @return
 	 * @throws HydrationException
 	 */
-	private List<Event> hydrateDomainEvents(UUID aggregateId, Iterator<EventModel> eventModels)
+	private List<Event> getDomainEvents(UUID aggregateId, Iterator<EventModel> eventModels)
 			throws HydrationException {
 
-		List<Event> history = new ArrayList<Event>();
+		List<Event> history = new ArrayList<>();
 
 		while (eventModels.hasNext()) {
 			EventModel eventModel = eventModels.next();
@@ -157,26 +142,5 @@ public class DynamoDbEventStore implements EventStore {
 		}
 
 		return history;
-	}
-
-	/**
-	 * Publish the events to the SQS.
-	 * 
-	 * @param entries
-	 */
-	private void publishEvents(List<SendMessageBatchRequestEntry> entries) {
-		if(entries.isEmpty()) return;
-
-		// Create the client.
-		SqsClient client = SqsClient.builder().build();
-
-		// Get the queue URL.
-		GetQueueUrlResponse getQueueUrlResponse = client
-				.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName).build());
-
-		String queueUrl = getQueueUrlResponse.queueUrl();
-
-		// Send the batch.
-		client.sendMessageBatch(SendMessageBatchRequest.builder().queueUrl(queueUrl).entries(entries).build());
 	}
 }

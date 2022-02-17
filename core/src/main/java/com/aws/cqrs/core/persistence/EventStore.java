@@ -15,9 +15,9 @@ interface EventStore {
 	/**
 	 * Persist the changes
 	 * 
-	 * @param aggregateId
-	 * @param expectedVersion
-	 * @param events
+	 * @param aggregateId The aggregate id.
+	 * @param expectedVersion The expected version when persisting state.
+	 * @param events The list of events to persist.
 	 * @throws EventCollisionException
 	 */
 	void saveEvents(UUID aggregateId, long expectedVersion, Iterable<Event> events) throws EventCollisionException;
@@ -25,8 +25,8 @@ interface EventStore {
 	/**
 	 * Retrieves the events
 	 * 
-	 * @param aggregateId
-	 * @return
+	 * @param aggregateId The aggregate id.
+	 * @return The list of events.
 	 * @throws HydrationException
 	 * @throws AggregateNotFoundException
 	 */

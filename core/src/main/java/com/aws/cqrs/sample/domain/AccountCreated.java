@@ -11,8 +11,6 @@ import com.aws.cqrs.core.messaging.Event;
 
 public class AccountCreated implements Event, Serializable {
 
-	private static final long serialVersionUID = 1L;
-
 	private UUID accountId;
 	private String firstName;
 	private String lastName;

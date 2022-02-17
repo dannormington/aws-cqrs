@@ -1,11 +1,12 @@
 package com.aws.cqrs.serverless.command;
 
+import java.io.Serializable;
 import java.math.*;
 import java.util.UUID;
 
 import com.aws.cqrs.core.messaging.Command;
 
-public class AccountDeposit implements Command {
+public class AccountDeposit implements Command, Serializable {
 	private BigDecimal amount;
 	private UUID accountId;
 

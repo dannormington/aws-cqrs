@@ -15,7 +15,7 @@ public interface Repository<T extends AggregateRoot> {
 	/**
 	 * Persists the aggregate
 	 * 
-	 * @param aggregate
+	 * @param aggregate The aggregate to save.
 	 * @throws EventCollisionException
 	 */
 	void save(T aggregate) throws EventCollisionException;
@@ -23,7 +23,7 @@ public interface Repository<T extends AggregateRoot> {
 	/**
 	 * Get the aggregate
 	 * 
-	 * @param id
+	 * @param id The id of the aggregate.
 	 * @return
 	 * @throws HydrationException
 	 * @throws AggregateNotFoundException

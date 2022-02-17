@@ -13,8 +13,6 @@ import com.aws.cqrs.core.messaging.Event;
 
 public abstract class Transaction implements Event, Serializable {
 
-	private static final long serialVersionUID = 1L;
-
 	private UUID accountId;
 	private UUID transactionId;
 	private BigDecimal amount;

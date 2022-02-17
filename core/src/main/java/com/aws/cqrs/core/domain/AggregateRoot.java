@@ -11,9 +11,9 @@ import com.aws.cqrs.core.messaging.Event;
 public interface AggregateRoot {
 
 	/**
-	 * get the Id
+	 * get the id.
 	 * 
-	 * @return
+	 * @return The aggregate's id.
 	 */
 	UUID getId();
 
@@ -21,7 +21,7 @@ public interface AggregateRoot {
 	 * Gets all change events since the original hydration. If there are no changes
 	 * then null is returned
 	 * 
-	 * @return
+	 * @return The list of uncommitted changes.
 	 */
 	Iterable<Event> getUncommittedChanges();
 
@@ -33,7 +33,7 @@ public interface AggregateRoot {
 	/**
 	 * load the aggregate root
 	 * 
-	 * @param history
+	 * @param history The list of state changes from the event store.
 	 * @throws HydrationException
 	 */
 	void loadFromHistory(Iterable<Event> history) throws HydrationException;
@@ -41,7 +41,7 @@ public interface AggregateRoot {
 	/**
 	 * Returns the version of the aggregate when it was hydrated
 	 * 
-	 * @return
+	 * @return The expected version of the aggregate.
 	 */
 	int getExpectedVersion();
 }

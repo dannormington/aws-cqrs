@@ -22,7 +22,7 @@ public class AccountService {
 
 	/**
 	 * Create a new account.
-	 * 
+	 *
 	 * @param firstName
 	 * @param lastName
 	 * 

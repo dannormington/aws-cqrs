@@ -13,14 +13,14 @@ public class EventCollisionException extends AggregateException {
 
 	private static final long serialVersionUID = 1L;
 
-	private int expectedVersion;
-	private Date dateOccurred;
+	private final int expectedVersion;
+	private final Date dateOccurred;
 
 	/**
 	 * Constructor
 	 * 
-	 * @param aggregateId
-	 * @param expectedVersion
+	 * @param aggregateId The aggregate id.
+	 * @param expectedVersion The expected version when persisting state.
 	 */
 	public EventCollisionException(UUID aggregateId, int expectedVersion) {
 		this(null, aggregateId, expectedVersion);
@@ -29,9 +29,9 @@ public class EventCollisionException extends AggregateException {
 	/**
 	 * Constructor
 	 * 
-	 * @param source
-	 * @param aggregateId
-	 * @param expectedVersion
+	 * @param source The source of the exception.
+	 * @param aggregateId The aggregate id.
+	 * @param expectedVersion The expected version when persisting state.
 	 * 
 	 */
 	public EventCollisionException(Throwable source, UUID aggregateId, int expectedVersion) {
@@ -43,7 +43,7 @@ public class EventCollisionException extends AggregateException {
 	/**
 	 * Get the expected version when the collision occurred
 	 * 
-	 * @return
+	 * @return The expected version when persisting state.
 	 */
 	public int getExpectedVersion() {
 		return expectedVersion;
@@ -52,7 +52,7 @@ public class EventCollisionException extends AggregateException {
 	/**
 	 * Get the date the exception occurred
 	 * 
-	 * @return
+	 * @return The date the exception occurred.
 	 */
 	public Date getDateOccurred() {
 		return dateOccurred;

@@ -8,7 +8,7 @@ import java.util.Map;
 public abstract class RequestHandlerBase<I,O> implements RequestHandler<I,O> {
     protected String buildErrorMessage(int statusCode, String errorType, String message, String requestId) {
 
-        Map<String, Object> errorPayload = new HashMap<String, Object>();
+        Map<String, Object> errorPayload = new HashMap<>();
         errorPayload.put("errorType", errorType);
         errorPayload.put("httpStatus", statusCode);
         errorPayload.put("requestId", requestId);
