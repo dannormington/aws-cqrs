@@ -11,8 +11,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
 import software.amazon.awssdk.enhanced.dynamodb.*;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
-import software.amazon.awssdk.enhanced.dynamodb.model.TransactWriteItemsEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 import software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException;
 import software.amazon.awssdk.services.sqs.model.*;
@@ -36,10 +35,9 @@ public class DynamoDbEventStore implements EventStore {
 
 		DynamoDbTable<EventModel> eventStoreTable = enhancedClient.table(tableName, eventModelSchema);
 
-		// Ensure that the Id and Version are unique
-		//Expression expression = Expression.builder().expression("(attribute_not_exists(Id) and attribute_not_exists(Version))").build();
-		//ConditionCheck<EventModel> conditionCheck = ConditionCheck.builder().conditionExpression(expression).build();
-		//TransactWriteItemsEnhancedRequest.Builder requestBuilder = TransactWriteItemsEnhancedRequest.builder().addConditionCheck(eventStoreTable,conditionCheck);
+		// Create an expression and condition check to ensure that there aren't any collisions
+		//final Expression expression = Expression.builder().expression("(attribute_not_exists(Id) and attribute_not_exists(Version))").build();
+		//final ConditionCheck<EventModel> conditionCheck = ConditionCheck.builder().conditionExpression(expression).build();
 
 		TransactWriteItemsEnhancedRequest.Builder requestBuilder = TransactWriteItemsEnhancedRequest.builder();
 
@@ -80,7 +78,7 @@ public class DynamoDbEventStore implements EventStore {
 
 	@Override
 	public Iterable<Event> getEvents(UUID aggregateId) throws HydrationException, AggregateNotFoundException {
-		// Get the events by the aggregate Id.
+		// Get the events by the aggregate id.
 		Iterator<EventModel> events = getAggregateEvents(aggregateId);
 
 		// Deserialize the json from each domain event.
@@ -90,8 +88,8 @@ public class DynamoDbEventStore implements EventStore {
 	/**
 	 * Get all the records for a specific aggregate id.
 	 * 
-	 * @param aggregateId The aggregate Id.
-	 * @return All the events for a specific aggregate Id.
+	 * @param aggregateId The aggregate id.
+	 * @return All the events for a specific aggregate id.
 	 * @throws AggregateNotFoundException
 	 * @throws HydrationException
 	 */
@@ -103,8 +101,11 @@ public class DynamoDbEventStore implements EventStore {
 		QueryConditional queryConditional = QueryConditional
 				.keyEqualTo(Key.builder().partitionValue(aggregateId.toString()).build());
 
+		QueryEnhancedRequest request = QueryEnhancedRequest.builder()
+				.queryConditional(queryConditional).consistentRead(true).build();
+
 		try {
-			return eventStoreTable.query(queryConditional).items().iterator();
+			return eventStoreTable.query(request).items().iterator();
 		} catch (ResourceNotFoundException e) {
 			throw new AggregateNotFoundException(e, aggregateId);
 		} catch (DynamoDbException e) {
@@ -134,7 +135,7 @@ public class DynamoDbEventStore implements EventStore {
 				history.add(event);
 			} catch (JsonSyntaxException | ClassNotFoundException e) {
 				/*
-				 * Throw a hydration exception along with the aggregate Id and the message
+				 * Throw a hydration exception along with the aggregate id and the message
 				 */
 				throw new HydrationException(e, aggregateId);
 			}

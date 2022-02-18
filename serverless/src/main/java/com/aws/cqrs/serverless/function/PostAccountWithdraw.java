@@ -3,7 +3,7 @@ package com.aws.cqrs.serverless.function;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.aws.cqrs.infrastructure.exceptions.EventCollisionException;
 import com.aws.cqrs.infrastructure.exceptions.HydrationException;
-import com.aws.cqrs.services.AccountService;
+import com.aws.cqrs.application.AccountService;
 import com.aws.cqrs.serverless.command.AccountWithdraw;
 import com.aws.cqrs.serverless.response.AccountWithdrawResponse;
 

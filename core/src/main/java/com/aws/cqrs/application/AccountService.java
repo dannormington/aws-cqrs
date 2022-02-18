@@ -1,4 +1,4 @@
-package com.aws.cqrs.services;
+package com.aws.cqrs.application;
 
 import java.math.BigDecimal;
 import java.util.UUID;
