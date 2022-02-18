@@ -1,4 +1,4 @@
-package com.aws.cqrs.sample.domain;
+package com.aws.cqrs.domain;
 
 import com.aws.cqrs.domain.*;
 import com.aws.cqrs.infrastructure.exceptions.HydrationException;
