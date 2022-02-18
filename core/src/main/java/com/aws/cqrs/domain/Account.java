@@ -1,10 +1,9 @@
-package com.aws.cqrs.sample.domain;
+package com.aws.cqrs.domain;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-import com.aws.cqrs.core.domain.AggregateRootBase;
-import com.aws.cqrs.core.exceptions.HydrationException;
+import com.aws.cqrs.infrastructure.exceptions.HydrationException;
 
 /**
  * Class that represents an account.
@@ -27,7 +26,7 @@ public class Account extends AggregateRootBase {
 	/**
 	 * Constructor used when creating a new account
 	 * 
-	 * @param accountId
+	 * @param accountId The account id.
 	 * @throws HydrationException
 	 */
 	private Account(UUID accountId, String firstName, String lastName) throws HydrationException {
@@ -37,7 +36,7 @@ public class Account extends AggregateRootBase {
 	/**
 	 * Make a deposit into the account.
 	 * 
-	 * @param amount
+	 * @param amount The amount to deposit.
 	 * @throws IllegalArgumentException
 	 * @throws HydrationException
 	 */
@@ -53,11 +52,11 @@ public class Account extends AggregateRootBase {
 	/**
 	 * Make a withdrawal from the account.
 	 * 
-	 * @param amount
+	 * @param amount The amount to withdraw.
 	 * @throws IllegalArgumentException
 	 * @throws HydrationException
 	 */
-	public void withdrawal(BigDecimal amount) throws HydrationException {
+	public void withdraw(BigDecimal amount) throws HydrationException {
 		if (amount.compareTo(BigDecimal.ZERO) <= 0) {
 			throw new IllegalArgumentException("Amount must be greater than zero.");
 		}
@@ -73,11 +72,11 @@ public class Account extends AggregateRootBase {
 	/**
 	 * Create a new account.
 	 * 
-	 * @param accountId
-	 * @param firstName
-	 * @param lastName
+	 * @param accountId The account id.
+	 * @param firstName The first name.
+	 * @param lastName The last name.
 	 * 
-	 * @return
+	 * @return A new instance of an Account.
 	 * @throws HydrationException
 	 * @throws IllegalArgumentException
 	 */
@@ -92,7 +91,7 @@ public class Account extends AggregateRootBase {
 	/**
 	 * Apply the state change for the {@link AccountCreated} event.
 	 * 
-	 * @param event
+	 * @param event The event to apply.
 	 */
 	@SuppressWarnings("unused")
 	private void apply(AccountCreated event) {
@@ -102,7 +101,7 @@ public class Account extends AggregateRootBase {
 	/**
 	 * Apply the state change for the {@link Deposited} event.
 	 * 
-	 * @param event
+	 * @param event The event to apply.
 	 */
 	@SuppressWarnings("unused")
 	private void apply(Deposited event) {
@@ -112,7 +111,7 @@ public class Account extends AggregateRootBase {
 	/**
 	 * Apply the state change for the {@link Withdrew} event.
 	 * 
-	 * @param event
+	 * @param event The event to apply.
 	 */
 	@SuppressWarnings("unused")
 	private void apply(Withdrew event) {
@@ -122,7 +121,7 @@ public class Account extends AggregateRootBase {
 	/**
 	 * Apply the state change for the {@link AccountCreated} event.
 	 * 
-	 * @param event
+	 * @param event The event to apply.
 	 */
 	@SuppressWarnings("unused")
 	private void apply(Overdrawn event) {

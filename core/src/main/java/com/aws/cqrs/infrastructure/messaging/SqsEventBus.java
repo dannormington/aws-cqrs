@@ -1,4 +1,4 @@
-package com.aws.cqrs.core.messaging;
+package com.aws.cqrs.infrastructure.messaging;
 
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;

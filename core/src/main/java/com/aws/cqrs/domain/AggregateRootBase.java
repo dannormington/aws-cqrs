@@ -1,4 +1,4 @@
-package com.aws.cqrs.core.domain;
+package com.aws.cqrs.domain;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.aws.cqrs.core.exceptions.HydrationException;
-import com.aws.cqrs.core.messaging.Event;
+import com.aws.cqrs.infrastructure.exceptions.HydrationException;
+import com.aws.cqrs.infrastructure.messaging.Event;
 
 /**
  * Base class for aggregate root implementations
@@ -22,7 +22,7 @@ public abstract class AggregateRootBase implements AggregateRoot {
 	/**
 	 * list of changes that have occurred since last loaded
 	 */
-	private List<Event> changes = new ArrayList<Event>();
+	private final List<Event> changes = new ArrayList<>();
 
 	/**
 	 * returns the expected version
@@ -46,7 +46,7 @@ public abstract class AggregateRootBase implements AggregateRoot {
 
 	@Override
 	public Iterable<Event> getUncommittedChanges() {
-		return changes == null || changes.isEmpty() ? null : changes;
+		return changes;
 	}
 
 	@Override
@@ -63,7 +63,7 @@ public abstract class AggregateRootBase implements AggregateRoot {
 	/**
 	 * Apply the event assuming it is new
 	 * 
-	 * @param event
+	 * @param event The event to apply.
 	 * @throws HydrationException
 	 */
 	protected void applyChange(Event event) throws HydrationException {
@@ -74,8 +74,8 @@ public abstract class AggregateRootBase implements AggregateRoot {
 	 * Apply the change by invoking the inherited members apply method that fits the
 	 * signature of the event passed
 	 * 
-	 * @param event
-	 * @param isNew
+	 * @param event The event to apply the change.
+	 * @param isNew Pass true if applying a new change.
 	 * @throws HydrationException
 	 */
 	private void applyChange(Event event, boolean isNew) throws HydrationException {

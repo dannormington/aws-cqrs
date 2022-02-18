@@ -1,16 +1,15 @@
-package com.aws.cqrs.sample.domain;
+package com.aws.cqrs.domain;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-import com.aws.cqrs.core.messaging.Event;
+import com.aws.cqrs.infrastructure.messaging.Event;
 
 /**
  * Base class for transactions.
  */
-
 public abstract class Transaction implements Event, Serializable {
 
 	private UUID accountId;
@@ -27,8 +26,8 @@ public abstract class Transaction implements Event, Serializable {
 	/**
 	 * Constructor
 	 * 
-	 * @param accountId
-	 * @param amount
+	 * @param accountId The account id.
+	 * @param amount The amount of the transaction.
 	 */
 	protected Transaction(UUID accountId, BigDecimal amount) {
 		this.accountId = accountId;
@@ -38,36 +37,28 @@ public abstract class Transaction implements Event, Serializable {
 	}
 
 	/**
-	 * Get the Account Id.
-	 * 
-	 * @return
+	 * @return The account id.
 	 */
 	public UUID getAccountId() {
 		return this.accountId;
 	}
 
 	/**
-	 * Get the Transaction Id.
-	 * 
-	 * @return
+	 * @return The transaction id.
 	 */
 	public UUID getTransactionId() {
 		return this.transactionId;
 	}
 
 	/**
-	 * Get the amount deposited.
-	 * 
-	 * @return
+	 * @return The amount deposited.
 	 */
 	public BigDecimal getAmount() {
 		return this.amount;
 	}
 
 	/**
-	 * Get the transaction date.
-	 * 
-	 * @return
+	 * @return The transaction date.
 	 */
 	public OffsetDateTime getDate() {
 		return this.date;

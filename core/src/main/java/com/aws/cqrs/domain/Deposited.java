@@ -1,4 +1,4 @@
-package com.aws.cqrs.sample.domain;
+package com.aws.cqrs.domain;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -6,7 +6,6 @@ import java.util.UUID;
 /**
  * Event that is published when an account has been deposited to.
  */
-
 public class Deposited extends Transaction {
 
 	/**
@@ -19,8 +18,8 @@ public class Deposited extends Transaction {
 	/**
 	 * Constructor
 	 * 
-	 * @param accountId
-	 * @param amount
+	 * @param accountId The account id.
+	 * @param amount The amount deposited.
 	 */
 	public Deposited(UUID accountId, BigDecimal amount) {
 		super(accountId, amount);

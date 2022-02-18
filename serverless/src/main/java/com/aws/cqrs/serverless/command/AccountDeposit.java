@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.math.*;
 import java.util.UUID;
 
-import com.aws.cqrs.core.messaging.Command;
+import com.aws.cqrs.infrastructure.messaging.Command;
 
 public class AccountDeposit implements Command, Serializable {
 	private BigDecimal amount;

@@ -1,15 +1,14 @@
-package com.aws.cqrs.sample.domain;
+package com.aws.cqrs.domain;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-import com.aws.cqrs.core.messaging.Event;
+import com.aws.cqrs.infrastructure.messaging.Event;
 
 /**
  * Event that is published when an account has been overdrawn.
  */
-
 public class Overdrawn implements Event, Serializable {
 
 	private UUID accountId;
@@ -25,9 +24,9 @@ public class Overdrawn implements Event, Serializable {
 	/**
 	 * Constructor
 	 * 
-	 * @param accountId
-	 * @param transactionId,
-	 * @param serviceCharge,
+	 * @param accountId The account id.
+	 * @param transactionId The transaction id.
+	 * @param serviceCharge The service charge.
 	 */
 	public Overdrawn(UUID accountId, UUID transactionId, BigDecimal serviceCharge) {
 		this.accountId = accountId;
@@ -36,18 +35,18 @@ public class Overdrawn implements Event, Serializable {
 	}
 
 	/**
-	 * Get the Account Id.
+	 * Get the Account id.
 	 * 
-	 * @return
+	 * @return The account id.
 	 */
 	public UUID getAccountId() {
 		return this.accountId;
 	}
 
 	/**
-	 * Get the Transaction Id.
+	 * Get the Transaction id.
 	 * 
-	 * @return
+	 * @return The transaction id.
 	 */
 	public UUID getTransactionId() {
 		return this.transactionId;
@@ -56,7 +55,7 @@ public class Overdrawn implements Event, Serializable {
 	/**
 	 * Get the service charge.
 	 * 
-	 * @return
+	 * @return The service charge.
 	 */
 	public BigDecimal getServiceCharge() {
 		return this.serviceCharge;

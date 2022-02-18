@@ -1,4 +1,4 @@
-package com.aws.cqrs.sample.domain;
+package com.aws.cqrs.domain;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -19,8 +19,8 @@ public class Withdrew extends Transaction {
 	/**
 	 * Constructor
 	 * 
-	 * @param accountId
-	 * @param amount
+	 * @param accountId The account id.
+	 * @param amount The amount withdrawn.
 	 */
 	public Withdrew(UUID accountId, BigDecimal amount) {
 		super(accountId, amount);

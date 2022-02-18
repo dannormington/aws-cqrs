@@ -3,9 +3,9 @@ package com.aws.cqrs.serverless.function;
 import java.util.UUID;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.aws.cqrs.core.exceptions.EventCollisionException;
-import com.aws.cqrs.core.exceptions.HydrationException;
-import com.aws.cqrs.sample.services.AccountService;
+import com.aws.cqrs.infrastructure.exceptions.EventCollisionException;
+import com.aws.cqrs.infrastructure.exceptions.HydrationException;
+import com.aws.cqrs.services.AccountService;
 import com.aws.cqrs.serverless.command.CreateAccount;
 import com.aws.cqrs.serverless.response.CreateAccountResponse;
 

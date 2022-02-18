@@ -1,9 +1,9 @@
-package com.aws.cqrs.core.domain;
+package com.aws.cqrs.domain;
 
 import java.util.UUID;
 
-import com.aws.cqrs.core.exceptions.HydrationException;
-import com.aws.cqrs.core.messaging.Event;
+import com.aws.cqrs.infrastructure.exceptions.HydrationException;
+import com.aws.cqrs.infrastructure.messaging.Event;
 
 /**
  * Simple interface to an aggregate root
@@ -13,7 +13,7 @@ public interface AggregateRoot {
 	/**
 	 * get the id.
 	 * 
-	 * @return The aggregate's id.
+	 * @return The aggregate id.
 	 */
 	UUID getId();
 

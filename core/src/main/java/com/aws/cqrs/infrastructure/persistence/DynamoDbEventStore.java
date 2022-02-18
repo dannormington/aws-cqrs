@@ -1,17 +1,16 @@
-package com.aws.cqrs.core.persistence;
+package com.aws.cqrs.infrastructure.persistence;
 
 import java.util.*;
 
-import com.aws.cqrs.core.exceptions.AggregateNotFoundException;
-import com.aws.cqrs.core.exceptions.EventCollisionException;
-import com.aws.cqrs.core.exceptions.HydrationException;
-import com.aws.cqrs.core.messaging.Event;
-import com.aws.cqrs.core.messaging.SqsEventBus;
+import com.aws.cqrs.infrastructure.exceptions.AggregateNotFoundException;
+import com.aws.cqrs.infrastructure.exceptions.EventCollisionException;
+import com.aws.cqrs.infrastructure.exceptions.HydrationException;
+import com.aws.cqrs.infrastructure.messaging.Event;
+import com.aws.cqrs.infrastructure.messaging.SqsEventBus;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
 import software.amazon.awssdk.enhanced.dynamodb.*;
-import software.amazon.awssdk.enhanced.dynamodb.model.ConditionCheck;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.TransactWriteItemsEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;

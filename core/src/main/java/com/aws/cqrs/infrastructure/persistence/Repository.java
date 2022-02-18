@@ -1,9 +1,11 @@
-package com.aws.cqrs.core.persistence;
+package com.aws.cqrs.infrastructure.persistence;
 
 import java.util.UUID;
 
-import com.aws.cqrs.core.domain.AggregateRoot;
-import com.aws.cqrs.core.exceptions.*;
+import com.aws.cqrs.infrastructure.exceptions.AggregateNotFoundException;
+import com.aws.cqrs.infrastructure.exceptions.EventCollisionException;
+import com.aws.cqrs.infrastructure.exceptions.HydrationException;
+import com.aws.cqrs.domain.AggregateRoot;
 
 /**
  * Interface for a repository implementation

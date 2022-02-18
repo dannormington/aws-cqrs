@@ -1,14 +1,13 @@
-package com.aws.cqrs.sample.domain;
+package com.aws.cqrs.domain;
 
 import java.io.Serializable;
 import java.util.UUID;
 
-import com.aws.cqrs.core.messaging.Event;
+import com.aws.cqrs.infrastructure.messaging.Event;
 
 /**
  * Event that is published when an account is created.
  */
-
 public class AccountCreated implements Event, Serializable {
 
 	private UUID accountId;
@@ -24,7 +23,9 @@ public class AccountCreated implements Event, Serializable {
 	/**
 	 * Constructor
 	 * 
-	 * @param accountId
+	 * @param accountId The account id.
+	 * @param firstName The first name.
+	 * @param lastName The last name.
 	 */
 	public AccountCreated(UUID accountId, String firstName, String lastName) {
 		this.accountId = accountId;
@@ -33,27 +34,21 @@ public class AccountCreated implements Event, Serializable {
 	}
 
 	/**
-	 * Get the Account Id.
-	 * 
-	 * @return
+	 * @return The account id.
 	 */
 	public UUID getAccountId() {
 		return this.accountId;
 	}
 
 	/**
-	 * Get the first name.
-	 * 
-	 * @return
+	 * @return The first name.
 	 */
 	public String getFirstName() {
 		return firstName;
 	}
 
 	/**
-	 * Get the last name.
-	 * 
-	 * @return
+	 * @return The last name.
 	 */
 	public String getLastName() {
 		return lastName;

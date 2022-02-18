@@ -1,14 +1,14 @@
-package com.aws.cqrs.sample.services;
+package com.aws.cqrs.services;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-import com.aws.cqrs.core.exceptions.AggregateNotFoundException;
-import com.aws.cqrs.core.exceptions.EventCollisionException;
-import com.aws.cqrs.core.exceptions.HydrationException;
-import com.aws.cqrs.core.persistence.EventRepository;
-import com.aws.cqrs.core.persistence.Repository;
-import com.aws.cqrs.sample.domain.Account;
+import com.aws.cqrs.infrastructure.exceptions.AggregateNotFoundException;
+import com.aws.cqrs.infrastructure.exceptions.EventCollisionException;
+import com.aws.cqrs.infrastructure.exceptions.HydrationException;
+import com.aws.cqrs.infrastructure.persistence.EventRepository;
+import com.aws.cqrs.infrastructure.persistence.Repository;
+import com.aws.cqrs.domain.Account;
 
 /**
  * 
@@ -17,22 +17,22 @@ import com.aws.cqrs.sample.domain.Account;
  */
 public class AccountService {
 
-	private static final String EVENT_STORE_TABLE = "AccountTransactions";
+	private static final String EVENT_STORE_TABLE = "AccountEventStore";
 	private static final String SQS_QUEUE = "AccountQueue.fifo";
 
 	/**
 	 * Create a new account.
 	 *
-	 * @param firstName
-	 * @param lastName
+	 * @param firstName The first name.
+	 * @param lastName The last name.
 	 * 
-	 * @return The newly created Account Id.
+	 * @return The newly created Account id.
 	 * @throws EventCollisionException
 	 * @throws HydrationException
 	 */
 	public UUID create(String firstName, String lastName) throws EventCollisionException, HydrationException {
 		UUID accountId = UUID.randomUUID();
-		Repository<Account> repository = new EventRepository<Account>(Account.class, EVENT_STORE_TABLE, SQS_QUEUE);
+		Repository<Account> repository = new EventRepository<>(Account.class, EVENT_STORE_TABLE, SQS_QUEUE);
 		repository.save(Account.create(accountId, firstName, lastName));
 		return accountId;
 	}
@@ -40,15 +40,15 @@ public class AccountService {
 	/**
 	 * Make a deposit.
 	 * 
-	 * @param accountId
-	 * @param amount
+	 * @param accountId The account id.
+	 * @param amount The amount to deposit.
 	 * @throws HydrationException
 	 * @throws AggregateNotFoundException
 	 * @throws EventCollisionException
 	 */
 	public void deposit(UUID accountId, BigDecimal amount)
 			throws HydrationException, AggregateNotFoundException, EventCollisionException {
-		Repository<Account> repository = new EventRepository<Account>(Account.class, EVENT_STORE_TABLE, SQS_QUEUE);
+		Repository<Account> repository = new EventRepository<>(Account.class, EVENT_STORE_TABLE, SQS_QUEUE);
 		Account account = repository.getById(accountId);
 		account.deposit(amount);
 		repository.save(account);
@@ -57,17 +57,17 @@ public class AccountService {
 	/**
 	 * Make a withdrawal.
 	 * 
-	 * @param accountId
-	 * @param amount
+	 * @param accountId The account id.
+	 * @param amount The amount to withdraw.
 	 * @throws HydrationException
 	 * @throws AggregateNotFoundException
 	 * @throws EventCollisionException
 	 */
-	public void withdrawal(UUID accountId, BigDecimal amount)
+	public void withdraw(UUID accountId, BigDecimal amount)
 			throws HydrationException, AggregateNotFoundException, EventCollisionException {
-		Repository<Account> repository = new EventRepository<Account>(Account.class, EVENT_STORE_TABLE, SQS_QUEUE);
+		Repository<Account> repository = new EventRepository<>(Account.class, EVENT_STORE_TABLE, SQS_QUEUE);
 		Account account = repository.getById(accountId);
-		account.withdrawal(amount);
+		account.withdraw(amount);
 		repository.save(account);
 	}
 }
