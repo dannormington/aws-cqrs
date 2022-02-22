@@ -12,8 +12,7 @@ import com.google.gson.JsonSyntaxException;
 
 import software.amazon.awssdk.enhanced.dynamodb.*;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
-import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
-import software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException;
+import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.sqs.model.*;
 
 public class DynamoDbEventStore implements EventStore {
@@ -34,11 +33,6 @@ public class DynamoDbEventStore implements EventStore {
 			throws EventCollisionException {
 
 		DynamoDbTable<EventModel> eventStoreTable = enhancedClient.table(tableName, eventModelSchema);
-
-		// Create an expression and condition check to ensure that there aren't any collisions
-		//final Expression expression = Expression.builder().expression("(attribute_not_exists(Id) and attribute_not_exists(Version))").build();
-		//final ConditionCheck<EventModel> conditionCheck = ConditionCheck.builder().conditionExpression(expression).build();
-
 		TransactWriteItemsEnhancedRequest.Builder requestBuilder = TransactWriteItemsEnhancedRequest.builder();
 
 		// Add each event to the batch.
@@ -54,8 +48,17 @@ public class DynamoDbEventStore implements EventStore {
 			eventModel.setEvent(gson.toJson(event));
 			eventModel.setKind(event.getClass().getName());
 
-			// Put the item in the request
-			requestBuilder.addPutItem(eventStoreTable, eventModel);
+			// Create a new request
+			PutItemEnhancedRequest request = PutItemEnhancedRequest.builder(EventModel.class)
+					.item(eventModel)
+					.conditionExpression(Expression.builder()
+							.expression("attribute_not_exists(#id)")
+							.putExpressionName("#id", "Id")
+							.build())
+					.build();
+
+			requestBuilder.addPutItem(eventStoreTable, request);
+
 
 			Map<String, MessageAttributeValue> attributes = new HashMap<>();
 			attributes.put("messageType", MessageAttributeValue.builder().dataType("String").stringValue(eventModel.getKind()).build());
@@ -69,11 +72,22 @@ public class DynamoDbEventStore implements EventStore {
 					.messageBody(eventModel.getEvent()).build());
 		}
 
-		// Persist to the event store
-		enhancedClient.transactWriteItems(requestBuilder.build());
+		try {
+			// Persist to the event store
+			enhancedClient.transactWriteItems(requestBuilder.build());
 
-		// Publish the events to the queue
-		eventBus.publishEvents(entries);
+			// Publish the events to the queue
+			eventBus.publishEvents(entries);
+		}catch (ConditionalCheckFailedException e) {
+			throw new EventCollisionException(e, aggregateId, expectedVersion);
+		}catch (TransactionCanceledException e) {
+			if (e.hasCancellationReasons()) {
+				// TODO: Determine what reason would cause a condition to fail.
+				throw new EventCollisionException(e, aggregateId, expectedVersion);
+			} else {
+				throw e;
+			}
+		}
 	}
 
 	@Override

@@ -25,16 +25,13 @@ public class AccountService {
 	 *
 	 * @param firstName The first name.
 	 * @param lastName The last name.
-	 * 
-	 * @return The newly created Account id.
+	 *
 	 * @throws EventCollisionException
 	 * @throws HydrationException
 	 */
-	public UUID create(String firstName, String lastName) throws EventCollisionException, HydrationException {
-		UUID accountId = UUID.randomUUID();
+	public void create(UUID accountId, String firstName, String lastName) throws EventCollisionException, HydrationException {
 		Repository<Account> repository = new EventRepository<>(Account.class, EVENT_STORE_TABLE, SQS_QUEUE);
 		repository.save(Account.create(accountId, firstName, lastName));
-		return accountId;
 	}
 
 	/**

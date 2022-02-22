@@ -11,20 +11,8 @@ public class EventCollisionException extends AggregateException {
 
 	private static final String ERROR_TEXT = "Data has been changed between loading and state changes.";
 
-	private static final long serialVersionUID = 1L;
-
-	private final int expectedVersion;
+	private final long expectedVersion;
 	private final Date dateOccurred;
-
-	/**
-	 * Constructor
-	 * 
-	 * @param aggregateId The aggregate id.
-	 * @param expectedVersion The expected version when persisting state.
-	 */
-	public EventCollisionException(UUID aggregateId, int expectedVersion) {
-		this(null, aggregateId, expectedVersion);
-	}
 
 	/**
 	 * Constructor
@@ -34,8 +22,8 @@ public class EventCollisionException extends AggregateException {
 	 * @param expectedVersion The expected version when persisting state.
 	 * 
 	 */
-	public EventCollisionException(Throwable source, UUID aggregateId, int expectedVersion) {
-		super(source, aggregateId, ERROR_TEXT);
+	public EventCollisionException(Throwable source, UUID aggregateId, long expectedVersion) {
+		super(source, aggregateId, source.getCause().getMessage());
 		this.expectedVersion = expectedVersion;
 		this.dateOccurred = new Date();
 	}
@@ -45,7 +33,7 @@ public class EventCollisionException extends AggregateException {
 	 * 
 	 * @return The expected version when persisting state.
 	 */
-	public int getExpectedVersion() {
+	public long getExpectedVersion() {
 		return expectedVersion;
 	}
 

@@ -17,8 +17,8 @@ public class PostCreateAccount extends RequestHandlerBase<CreateAccount, CreateA
 		AccountService accountService = new AccountService();
 
 		try {
-			UUID accountId = accountService.create(input.getFirstName(), input.getLastName());
-			return new CreateAccountResponse(accountId);
+			accountService.create(input.getAccountId(), input.getFirstName(), input.getLastName());
+			return new CreateAccountResponse(input.getAccountId());
 		} catch (EventCollisionException e) {
 			String message = buildErrorMessage(409, "Conflict", e.getMessage(), context.getAwsRequestId());
 			throw new RuntimeException(message);

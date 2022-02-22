@@ -13,15 +13,6 @@ public class AggregateNotFoundException extends AggregateException {
 	/**
 	 * Constructor
 	 * 
-	 * @param aggregateId The aggregate id.
-	 */
-	public AggregateNotFoundException(UUID aggregateId) {
-		super(aggregateId, ERROR_TEXT);
-	}
-
-	/**
-	 * Constructor
-	 * 
 	 * @param source The source of the exception.
 	 * @param aggregateId The aggregate id.
 	 */
