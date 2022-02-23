@@ -5,7 +5,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class RequestHandlerBase<I,O> implements RequestHandler<I,O> {
+public abstract class RequestHandlerBase<I, O> implements RequestHandler<I, O> {
     protected String buildErrorMessage(int statusCode, String errorType, String message, String requestId) {
 
         Map<String, Object> errorPayload = new HashMap<>();

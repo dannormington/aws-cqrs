@@ -14,93 +14,93 @@ import com.aws.cqrs.infrastructure.messaging.Event;
  */
 public abstract class AggregateRootBase implements AggregateRoot {
 
-	/**
-	 * Aggregate id
-	 */
-	protected UUID id = null;
+    /**
+     * Aggregate id
+     */
+    protected UUID id = null;
 
-	/**
-	 * list of changes that have occurred since last loaded
-	 */
-	private final List<Event> changes = new ArrayList<>();
+    /**
+     * list of changes that have occurred since last loaded
+     */
+    private final List<Event> changes = new ArrayList<>();
 
-	/**
-	 * returns the expected version
-	 */
-	private int expectedVersion = 0;
+    /**
+     * returns the expected version
+     */
+    private int expectedVersion = 0;
 
-	@Override
-	public int getExpectedVersion() {
-		return expectedVersion;
-	}
+    @Override
+    public int getExpectedVersion() {
+        return expectedVersion;
+    }
 
-	@Override
-	public void markChangesAsCommitted() {
-		changes.clear();
-	}
+    @Override
+    public void markChangesAsCommitted() {
+        changes.clear();
+    }
 
-	@Override
-	public UUID getId() {
-		return id;
-	}
+    @Override
+    public UUID getId() {
+        return id;
+    }
 
-	@Override
-	public Iterable<Event> getUncommittedChanges() {
-		return changes;
-	}
+    @Override
+    public Iterable<Event> getUncommittedChanges() {
+        return changes;
+    }
 
-	@Override
-	public void loadFromHistory(Iterable<Event> history) throws HydrationException {
+    @Override
+    public void loadFromHistory(Iterable<Event> history) throws HydrationException {
 
-		if (history != null) {
-			for (Event event : history) {
-				applyChange(event, false);
-				expectedVersion++;
-			}
-		}
-	}
+        if (history != null) {
+            for (Event event : history) {
+                applyChange(event, false);
+                expectedVersion++;
+            }
+        }
+    }
 
-	/**
-	 * Apply the event assuming it is new
-	 * 
-	 * @param event The event to apply.
-	 * @throws HydrationException
-	 */
-	protected void applyChange(Event event) throws HydrationException {
-		applyChange(event, true);
-	}
+    /**
+     * Apply the event assuming it is new
+     *
+     * @param event The event to apply.
+     * @throws HydrationException
+     */
+    protected void applyChange(Event event) throws HydrationException {
+        applyChange(event, true);
+    }
 
-	/**
-	 * Apply the change by invoking the inherited members apply method that fits the
-	 * signature of the event passed
-	 * 
-	 * @param event The event to apply the change.
-	 * @param isNew Pass true if applying a new change.
-	 * @throws HydrationException
-	 */
-	private void applyChange(Event event, boolean isNew) throws HydrationException {
+    /**
+     * Apply the change by invoking the inherited members apply method that fits the
+     * signature of the event passed
+     *
+     * @param event The event to apply the change.
+     * @param isNew Pass true if applying a new change.
+     * @throws HydrationException
+     */
+    private void applyChange(Event event, boolean isNew) throws HydrationException {
 
-		Method method = null;
+        Method method = null;
 
-		try {
-			method = this.getClass().getDeclaredMethod("apply", event.getClass());
-		} catch (NoSuchMethodException e) {
-			// do nothing. This just means that the method signature wasn't found and
-			// the aggregate doesn't need to apply any state changes since it wasn't
-			// implemented.
-		}
+        try {
+            method = this.getClass().getDeclaredMethod("apply", event.getClass());
+        } catch (NoSuchMethodException e) {
+            // do nothing. This just means that the method signature wasn't found and
+            // the aggregate doesn't need to apply any state changes since it wasn't
+            // implemented.
+        }
 
-		if (method != null) {
-			method.setAccessible(true);
-			try {
-				method.invoke(this, event);
-			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-				throw new HydrationException(e, this.getId());
-			}
-		}
+        if (method != null) {
+            method.setAccessible(true);
+            try {
+                method.invoke(this, event);
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                throw new HydrationException(e, this.getId());
+            }
+        }
 
-		if (isNew) {
-			changes.add(event);
-		}
-	}
+        if (isNew) {
+            changes.add(event);
+        }
+    }
 }

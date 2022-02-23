@@ -9,24 +9,24 @@ import java.util.UUID;
  */
 public class HydrationException extends AggregateException {
 
-	private static final String ERROR_TEXT = "Loading the data failed";
+    private static final String ERROR_TEXT = "Loading the data failed";
 
-	/**
-	 * Default constructor
-	 * 
-	 * @param aggregateId The aggregate id.
-	 */
-	public HydrationException(UUID aggregateId) {
-		super(aggregateId, ERROR_TEXT);
-	}
+    /**
+     * Default constructor
+     *
+     * @param aggregateId The aggregate id.
+     */
+    public HydrationException(UUID aggregateId) {
+        super(aggregateId, ERROR_TEXT);
+    }
 
-	/**
-	 * Constructor
-	 * 
-	 * @param source The source of the exception.
-	 * @param aggregateId The aggregate id.
-	 */
-	public HydrationException(Throwable source, UUID aggregateId) {
-		super(source, aggregateId, ERROR_TEXT);
-	}
+    /**
+     * Constructor
+     *
+     * @param source      The source of the exception.
+     * @param aggregateId The aggregate id.
+     */
+    public HydrationException(Throwable source, UUID aggregateId) {
+        super(source, aggregateId, ERROR_TEXT);
+    }
 }

@@ -8,20 +8,20 @@ import java.util.UUID;
  */
 public class Deposited extends Transaction {
 
-	/**
-	 * Default Constructor for serialization.
-	 */
-	public Deposited() {
-		super();
-	}
+    /**
+     * Default Constructor for serialization.
+     */
+    public Deposited() {
+        super();
+    }
 
-	/**
-	 * Constructor
-	 * 
-	 * @param accountId The account id.
-	 * @param amount The amount deposited.
-	 */
-	public Deposited(UUID accountId, BigDecimal amount) {
-		super(accountId, amount);
-	}
+    /**
+     * Constructor
+     *
+     * @param accountId The account id.
+     * @param amount    The amount deposited.
+     */
+    public Deposited(UUID accountId, BigDecimal amount) {
+        super(accountId, amount);
+    }
 }

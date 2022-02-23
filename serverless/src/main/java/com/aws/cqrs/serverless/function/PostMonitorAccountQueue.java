@@ -9,7 +9,7 @@ public class PostMonitorAccountQueue implements RequestHandler<SQSEvent, Void> {
 
     @Override
     public Void handleRequest(SQSEvent event, Context context) {
-        for(SQSMessage msg : event.getRecords()) {
+        for (SQSMessage msg : event.getRecords()) {
             System.out.println(new String(msg.getBody()));
         }
 

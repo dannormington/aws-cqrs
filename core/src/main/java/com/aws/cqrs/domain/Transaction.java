@@ -12,55 +12,55 @@ import com.aws.cqrs.infrastructure.messaging.Event;
  */
 public abstract class Transaction implements Event, Serializable {
 
-	private UUID accountId;
-	private UUID transactionId;
-	private BigDecimal amount;
-	private OffsetDateTime date;
+    private UUID accountId;
+    private UUID transactionId;
+    private BigDecimal amount;
+    private OffsetDateTime date;
 
-	/**
-	 * Default Constructor for serialization.
-	 */
-	protected Transaction() {
-	}
+    /**
+     * Default Constructor for serialization.
+     */
+    protected Transaction() {
+    }
 
-	/**
-	 * Constructor
-	 * 
-	 * @param accountId The account id.
-	 * @param amount The amount of the transaction.
-	 */
-	protected Transaction(UUID accountId, BigDecimal amount) {
-		this.accountId = accountId;
-		this.transactionId = UUID.randomUUID();
-		this.date = OffsetDateTime.now();
-		this.amount = amount;
-	}
+    /**
+     * Constructor
+     *
+     * @param accountId The account id.
+     * @param amount    The amount of the transaction.
+     */
+    protected Transaction(UUID accountId, BigDecimal amount) {
+        this.accountId = accountId;
+        this.transactionId = UUID.randomUUID();
+        this.date = OffsetDateTime.now();
+        this.amount = amount;
+    }
 
-	/**
-	 * @return The account id.
-	 */
-	public UUID getAccountId() {
-		return this.accountId;
-	}
+    /**
+     * @return The account id.
+     */
+    public UUID getAccountId() {
+        return this.accountId;
+    }
 
-	/**
-	 * @return The transaction id.
-	 */
-	public UUID getTransactionId() {
-		return this.transactionId;
-	}
+    /**
+     * @return The transaction id.
+     */
+    public UUID getTransactionId() {
+        return this.transactionId;
+    }
 
-	/**
-	 * @return The amount deposited.
-	 */
-	public BigDecimal getAmount() {
-		return this.amount;
-	}
+    /**
+     * @return The amount deposited.
+     */
+    public BigDecimal getAmount() {
+        return this.amount;
+    }
 
-	/**
-	 * @return The transaction date.
-	 */
-	public OffsetDateTime getDate() {
-		return this.date;
-	}
+    /**
+     * @return The transaction date.
+     */
+    public OffsetDateTime getDate() {
+        return this.date;
+    }
 }

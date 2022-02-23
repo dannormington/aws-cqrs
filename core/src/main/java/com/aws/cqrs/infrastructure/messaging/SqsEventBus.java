@@ -27,9 +27,9 @@ public class SqsEventBus {
      * @param entries The list of messages to publish.
      */
     public void publishEvents(List<SendMessageBatchRequestEntry> entries) {
-        if(entries.isEmpty()) return;
+        if (entries.isEmpty()) return;
 
-        if(queueUrl == null) {
+        if (queueUrl == null) {
             GetQueueUrlResponse getQueueUrlResponse = client
                     .getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName).build());
 

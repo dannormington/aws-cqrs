@@ -11,53 +11,53 @@ import com.aws.cqrs.infrastructure.messaging.Event;
  */
 public class Overdrawn implements Event, Serializable {
 
-	private UUID accountId;
-	private UUID transactionId;
-	private BigDecimal serviceCharge;
+    private UUID accountId;
+    private UUID transactionId;
+    private BigDecimal serviceCharge;
 
-	/**
-	 * Default Constructor for serialization.
-	 */
-	public Overdrawn() {
-	}
+    /**
+     * Default Constructor for serialization.
+     */
+    public Overdrawn() {
+    }
 
-	/**
-	 * Constructor
-	 * 
-	 * @param accountId The account id.
-	 * @param transactionId The transaction id.
-	 * @param serviceCharge The service charge.
-	 */
-	public Overdrawn(UUID accountId, UUID transactionId, BigDecimal serviceCharge) {
-		this.accountId = accountId;
-		this.transactionId = transactionId;
-		this.serviceCharge = serviceCharge;
-	}
+    /**
+     * Constructor
+     *
+     * @param accountId     The account id.
+     * @param transactionId The transaction id.
+     * @param serviceCharge The service charge.
+     */
+    public Overdrawn(UUID accountId, UUID transactionId, BigDecimal serviceCharge) {
+        this.accountId = accountId;
+        this.transactionId = transactionId;
+        this.serviceCharge = serviceCharge;
+    }
 
-	/**
-	 * Get the Account id.
-	 * 
-	 * @return The account id.
-	 */
-	public UUID getAccountId() {
-		return this.accountId;
-	}
+    /**
+     * Get the Account id.
+     *
+     * @return The account id.
+     */
+    public UUID getAccountId() {
+        return this.accountId;
+    }
 
-	/**
-	 * Get the Transaction id.
-	 * 
-	 * @return The transaction id.
-	 */
-	public UUID getTransactionId() {
-		return this.transactionId;
-	}
+    /**
+     * Get the Transaction id.
+     *
+     * @return The transaction id.
+     */
+    public UUID getTransactionId() {
+        return this.transactionId;
+    }
 
-	/**
-	 * Get the service charge.
-	 * 
-	 * @return The service charge.
-	 */
-	public BigDecimal getServiceCharge() {
-		return this.serviceCharge;
-	}
+    /**
+     * Get the service charge.
+     *
+     * @return The service charge.
+     */
+    public BigDecimal getServiceCharge() {
+        return this.serviceCharge;
+    }
 }
