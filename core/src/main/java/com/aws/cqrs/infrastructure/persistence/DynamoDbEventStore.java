@@ -50,7 +50,7 @@ public class DynamoDbEventStore implements EventStore {
             eventModel.setKind(event.getClass().getName());
 
             // Create a new request
-            PutItemEnhancedRequest request = PutItemEnhancedRequest.builder(EventModel.class)
+            PutItemEnhancedRequest<EventModel> request = PutItemEnhancedRequest.builder(EventModel.class)
                     .item(eventModel)
                     .conditionExpression(Expression.builder()
                             .expression("attribute_not_exists(#id)")

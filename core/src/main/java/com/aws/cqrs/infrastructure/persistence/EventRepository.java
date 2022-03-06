@@ -1,10 +1,10 @@
 package com.aws.cqrs.infrastructure.persistence;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
 
 import com.aws.cqrs.domain.AggregateRoot;
 import com.aws.cqrs.infrastructure.exceptions.AggregateNotFoundException;
-import com.aws.cqrs.infrastructure.exceptions.EventCollisionException;
 import com.aws.cqrs.infrastructure.exceptions.HydrationException;
 import com.aws.cqrs.infrastructure.exceptions.TransactionFailedException;
 import com.aws.cqrs.infrastructure.messaging.Event;
@@ -57,8 +57,8 @@ public class EventRepository<T extends AggregateRoot> implements Repository<T> {
          */
         T aggregate;
         try {
-            aggregate = this.aClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            aggregate = aClass.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new HydrationException(id);
         }
 

@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.UUID;
 
 public class CreateAccountResponse implements Serializable {
-    private UUID accountId;
+    private final UUID accountId;
 
     public CreateAccountResponse(UUID accountId) {
         this.accountId = accountId;

@@ -1,6 +1,5 @@
 package com.aws.cqrs.domain;
 
-import com.aws.cqrs.domain.*;
 import com.aws.cqrs.infrastructure.exceptions.HydrationException;
 import com.aws.cqrs.infrastructure.messaging.Event;
 import com.google.gson.Gson;
@@ -32,7 +31,7 @@ class AccountTest {
     @Test
     void when_hasDefaultConstructor_expect_success() {
         Assertions.assertDoesNotThrow(() -> {
-            Account.class.newInstance();
+            Account.class.getConstructor().newInstance();
         });
     }
 

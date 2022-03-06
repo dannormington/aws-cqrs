@@ -1,6 +1,5 @@
 package com.aws.cqrs.infrastructure.exceptions;
 
-import java.util.Date;
 import java.util.UUID;
 
 /**

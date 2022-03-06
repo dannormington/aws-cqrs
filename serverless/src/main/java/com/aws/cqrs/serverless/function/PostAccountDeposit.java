@@ -22,10 +22,7 @@ public class PostAccountDeposit extends RequestHandlerBase<AccountDeposit, Accou
         } catch (EventCollisionException e) {
             String message = buildErrorMessage(409, "Conflict", e.getMessage(), context.getAwsRequestId());
             throw new RuntimeException(message);
-        } catch (TransactionFailedException e) {
-            String message = buildErrorMessage(500, "InternalServerError", e.getMessage(), context.getAwsRequestId());
-            throw new RuntimeException(message);
-        } catch (HydrationException e) {
+        } catch (TransactionFailedException | HydrationException e) {
             String message = buildErrorMessage(500, "InternalServerError", e.getMessage(), context.getAwsRequestId());
             throw new RuntimeException(message);
         } catch (AggregateNotFoundException e) {

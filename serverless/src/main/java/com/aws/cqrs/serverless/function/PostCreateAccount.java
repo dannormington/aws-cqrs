@@ -1,7 +1,5 @@
 package com.aws.cqrs.serverless.function;
 
-import java.util.UUID;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.aws.cqrs.infrastructure.exceptions.EventCollisionException;
 import com.aws.cqrs.infrastructure.exceptions.HydrationException;
