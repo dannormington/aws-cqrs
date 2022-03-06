@@ -6,7 +6,7 @@
       "Properties": {
         "Handler": "com.aws.cqrs.serverless.function.PostCreateAccount",
         "Runtime" : "java8",
-        "CodeUri" : "./target/serverless-1.0.0.jar",
+        "CodeUri" : "./target/serverless.jar",
         "Policies": [
           "AmazonDynamoDBFullAccess",
           "AmazonS3FullAccess"
@@ -27,7 +27,7 @@
       "Properties": {
         "Handler": "com.aws.cqrs.serverless.function.PostAccountDeposit",
         "Runtime" : "java8",
-        "CodeUri" : "./target/serverless-1.0.0.jar",
+        "CodeUri" : "./target/serverless.jar",
         "Policies": [
           "AmazonDynamoDBFullAccess",
           "AmazonS3FullAccess"
@@ -48,7 +48,7 @@
       "Properties": {
         "Handler": "com.aws.cqrs.serverless.function.PostAccountWithdraw",
         "Runtime" : "java8",
-        "CodeUri" : "./target/serverless-1.0.0.jar",
+        "CodeUri" : "./target/serverless.jar",
         "Policies": [
           "AmazonDynamoDBFullAccess",
           "AmazonS3FullAccess"
