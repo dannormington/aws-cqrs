@@ -13,6 +13,5 @@ located at https://github.com/gregoryyoung/m-r
 - Lambda
 
 ## TODO
-- Add exception handling when querying/persisting to DynamoDB.
 - Add DynamoDB stream to publish to SQS thus eliminating logic needed to manually publish events.
 - Add handlers to update read tables based on SQS messages.
