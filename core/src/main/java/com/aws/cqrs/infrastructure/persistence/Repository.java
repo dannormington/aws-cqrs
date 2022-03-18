@@ -9,7 +9,7 @@ import com.aws.cqrs.domain.AggregateRoot;
 import com.aws.cqrs.infrastructure.exceptions.TransactionFailedException;
 
 /**
- * Interface for a repository implementation
+ * Interface for a repository implementation.
  *
  * @param <T>
  */

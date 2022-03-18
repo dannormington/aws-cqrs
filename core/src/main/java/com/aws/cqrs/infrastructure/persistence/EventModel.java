@@ -13,7 +13,7 @@ public class EventModel {
     private String id;
     private Long version;
     private String kind;
-    private String event;
+    private String json;
 
     public EventModel() {
     }
@@ -24,9 +24,7 @@ public class EventModel {
         return this.id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public void setId(String id) { this.id = id; }
 
     @DynamoDbSortKey
     @DynamoDbAttribute("Version")
@@ -48,11 +46,11 @@ public class EventModel {
     }
 
     @DynamoDbAttribute("Event")
-    public String getEvent() {
-        return this.event;
+    public String getJson() {
+        return this.json;
     }
 
-    public void setEvent(String event) {
-        this.event = event;
+    public void setJson(String json) {
+        this.json = json;
     }
 }

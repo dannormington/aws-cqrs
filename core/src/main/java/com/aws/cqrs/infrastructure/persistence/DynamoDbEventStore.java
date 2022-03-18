@@ -46,7 +46,7 @@ public class DynamoDbEventStore implements EventStore {
             EventModel eventModel = new EventModel();
             eventModel.setId(aggregateId.toString());
             eventModel.setVersion(expectedVersion);
-            eventModel.setEvent(gson.toJson(event));
+            eventModel.setJson(gson.toJson(event));
             eventModel.setKind(event.getClass().getName());
 
             // Create a new request
@@ -70,7 +70,7 @@ public class DynamoDbEventStore implements EventStore {
                     .messageDeduplicationId(UUID.randomUUID().toString())
                     .messageGroupId(groupId)
                     .messageAttributes(attributes)
-                    .messageBody(eventModel.getEvent()).build());
+                    .messageBody(eventModel.getJson()).build());
         }
 
         try {
@@ -157,7 +157,7 @@ public class DynamoDbEventStore implements EventStore {
             EventModel eventModel = eventModels.next();
 
             try {
-                Event event = (Event) gson.fromJson(eventModel.getEvent(), Class.forName(eventModel.getKind()));
+                Event event = (Event) gson.fromJson(eventModel.getJson(), Class.forName(eventModel.getKind()));
                 history.add(event);
             } catch (JsonSyntaxException | ClassNotFoundException e) {
                 /*
