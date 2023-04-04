@@ -15,7 +15,6 @@ public abstract class Transaction implements Event, Serializable {
     private UUID accountId;
     private UUID transactionId;
     private BigDecimal amount;
-    private BigDecimal balance;
     private OffsetDateTime date;
 
     /**

@@ -2,9 +2,9 @@ package com.aws.cqrs.application;
 
 import java.math.BigDecimal;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import com.aws.cqrs.infrastructure.exceptions.AggregateNotFoundException;
-import com.aws.cqrs.infrastructure.exceptions.EventCollisionException;
 import com.aws.cqrs.infrastructure.exceptions.HydrationException;
 import com.aws.cqrs.infrastructure.exceptions.TransactionFailedException;
 import com.aws.cqrs.infrastructure.persistence.EventRepository;
@@ -17,19 +17,19 @@ import com.aws.cqrs.domain.Account;
 public class AccountService {
 
     private static final String EVENT_STORE_TABLE = "AccountEventStore";
-    private static final String SQS_QUEUE = "AccountQueue.fifo";
+
+    private final Repository<Account> repository = new EventRepository<>(Account.class, EVENT_STORE_TABLE);
 
     /**
      * Create a new account.
      *
      * @param firstName The first name.
      * @param lastName  The last name.
-     * @throws EventCollisionException
+     * @throws TransactionFailedException
      * @throws HydrationException
      */
-    public void create(UUID accountId, String firstName, String lastName) throws TransactionFailedException, HydrationException {
-        Repository<Account> repository = new EventRepository<>(Account.class, EVENT_STORE_TABLE, SQS_QUEUE);
-        repository.save(Account.create(accountId, firstName, lastName));
+    public CompletableFuture<Void> create(UUID accountId, String firstName, String lastName) throws TransactionFailedException, HydrationException {
+        return repository.save(Account.create(accountId, firstName, lastName));
     }
 
     /**
@@ -39,14 +39,17 @@ public class AccountService {
      * @param amount    The amount to deposit.
      * @throws HydrationException
      * @throws AggregateNotFoundException
-     * @throws EventCollisionException
+     * @throws TransactionFailedException
      */
-    public void deposit(UUID accountId, BigDecimal amount)
+    public CompletableFuture<Void> deposit(UUID accountId, BigDecimal amount)
             throws HydrationException, AggregateNotFoundException, TransactionFailedException {
-        Repository<Account> repository = new EventRepository<>(Account.class, EVENT_STORE_TABLE, SQS_QUEUE);
-        Account account = repository.getById(accountId);
-        account.deposit(amount);
-        repository.save(account);
+        return repository.getById(accountId).thenCompose(account -> {
+            if (account != null) {
+                account.deposit(amount);
+                return repository.save(account);
+            }
+            return CompletableFuture.completedFuture(null);
+        });
     }
 
     /**
@@ -56,13 +59,13 @@ public class AccountService {
      * @param amount    The amount to withdraw.
      * @throws HydrationException
      * @throws AggregateNotFoundException
-     * @throws EventCollisionException
+     * @throws TransactionFailedException
      */
-    public void withdraw(UUID accountId, BigDecimal amount)
+    public CompletableFuture<Void> withdraw(UUID accountId, BigDecimal amount)
             throws HydrationException, AggregateNotFoundException, TransactionFailedException {
-        Repository<Account> repository = new EventRepository<>(Account.class, EVENT_STORE_TABLE, SQS_QUEUE);
-        Account account = repository.getById(accountId);
-        account.withdraw(amount);
-        repository.save(account);
+        return repository.getById(accountId).thenCompose(account -> {
+            account.withdraw(amount);
+            return repository.save(account);
+        });
     }
 }

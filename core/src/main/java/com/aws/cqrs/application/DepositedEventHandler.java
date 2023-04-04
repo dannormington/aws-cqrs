@@ -1,35 +1,26 @@
 package com.aws.cqrs.application;
 
 import com.aws.cqrs.domain.Deposited;
-import software.amazon.awssdk.enhanced.dynamodb.*;
-import software.amazon.awssdk.enhanced.dynamodb.model.*;
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 
-import java.util.List;
+import java.util.Collections;
+import java.util.concurrent.CompletableFuture;
 
 public class DepositedEventHandler implements EventHandler<Deposited> {
 
     @Override
-    public void handle(Deposited event) {
-        DynamoDbEnhancedClient enhancedClient = DynamoDbEnhancedClient.create();
-        DynamoDbTable<AccountModel> accountTable = enhancedClient.table("CustomerAccount", TableSchema.fromBean(AccountModel.class));
+    public CompletableFuture<Void> handle(Deposited event) {
+        UpdateItemRequest updateItemRequest = UpdateItemRequest.builder()
+                .tableName("Account")
+                .key(Collections.singletonMap("AccountId", AttributeValue.builder().s(event.getAccountId().toString()).build()))
+                .updateExpression("ADD #balance :balance")
+                .expressionAttributeNames(Collections.singletonMap("Balance", "#balance"))
+                .expressionAttributeValues(Collections.singletonMap(":balance", AttributeValue.builder().n(event.getAmount().toString()).build()))
+                .build();
 
-        GetItemEnhancedRequest getItemEnhancedRequest = GetItemEnhancedRequest.builder()
-                .consistentRead(true)
-                .key(Key.builder().partitionValue(event.getAccountId().toString()).build()).build();
-
-        TransactGetItemsEnhancedRequest getRequest = TransactGetItemsEnhancedRequest.builder()
-                        .addGetItem(accountTable, getItemEnhancedRequest).build();
-
-        List<Document> results = enhancedClient.transactGetItems(getRequest);
-
-        if(results.isEmpty()) return;
-
-        AccountModel account = results.get(0).getItem(accountTable);
-        account.setBalance(account.getBalance().add(event.getAmount()));
-
-        TransactWriteItemsEnhancedRequest writeRequest = TransactWriteItemsEnhancedRequest.builder()
-                .addPutItem(accountTable, account).build();
-
-        enhancedClient.transactWriteItems(writeRequest);
+        DynamoDbAsyncClient dynamoDbAsyncClient = DynamoDbAsyncClient.create();
+        return dynamoDbAsyncClient.updateItem(updateItemRequest).thenAccept(x -> {});
     }
 }

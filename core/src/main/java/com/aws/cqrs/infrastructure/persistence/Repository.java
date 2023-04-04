@@ -1,9 +1,9 @@
 package com.aws.cqrs.infrastructure.persistence;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import com.aws.cqrs.infrastructure.exceptions.AggregateNotFoundException;
-import com.aws.cqrs.infrastructure.exceptions.EventCollisionException;
 import com.aws.cqrs.infrastructure.exceptions.HydrationException;
 import com.aws.cqrs.domain.AggregateRoot;
 import com.aws.cqrs.infrastructure.exceptions.TransactionFailedException;
@@ -19,9 +19,9 @@ public interface Repository<T extends AggregateRoot> {
      * Persists the aggregate
      *
      * @param aggregate The aggregate to save.
-     * @throws EventCollisionException
+     * @throws TransactionFailedException
      */
-    void save(T aggregate) throws TransactionFailedException;
+    CompletableFuture<Void> save(T aggregate) throws TransactionFailedException;
 
     /**
      * Get the aggregate
@@ -31,5 +31,5 @@ public interface Repository<T extends AggregateRoot> {
      * @throws HydrationException
      * @throws AggregateNotFoundException
      */
-    T getById(UUID id) throws HydrationException, AggregateNotFoundException;
+    CompletableFuture<T> getById(UUID id) throws HydrationException, AggregateNotFoundException;
 }

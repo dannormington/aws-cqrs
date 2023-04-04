@@ -9,9 +9,7 @@ located at https://github.com/gregoryyoung/m-r
 ## AWS Technologies
 - AWS Java SDK v2
 - DynamoDB
-- SQS
 - Lambda
 
 ## TODO
-- Add DynamoDB stream to publish to SQS thus eliminating logic needed to manually publish events.
-- Add handlers to update read tables based on SQS messages.
+- Add handler to subscribe to DDB stream to update read models.

@@ -1,40 +1,37 @@
 package com.aws.cqrs.application;
 
 import com.aws.cqrs.domain.AccountCreated;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
-import software.amazon.awssdk.enhanced.dynamodb.Expression;
-import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
-import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest;
-import software.amazon.awssdk.enhanced.dynamodb.model.TransactWriteItemsEnhancedRequest;
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
+import software.amazon.awssdk.services.dynamodb.model.*;
 
-import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class AccountCreatedEventHandler implements EventHandler<AccountCreated> {
 
     @Override
-    public void handle(AccountCreated event) {
-        // Create the new account read model.
-        AccountModel account = new AccountModel();
-        account.setAccountId(event.getAccountId().toString());
-        account.setFirstName(event.getFirstName());
-        account.setLastName(event.getLastName());
-        account.setBalance(BigDecimal.ZERO);
+    public CompletableFuture<Void> handle(AccountCreated event) {
+        Map<String, AttributeValue> attributeValues = new HashMap<>();
+        attributeValues.put(":AccountId", AttributeValue.builder().s(event.getAccountId().toString()).build());
+        attributeValues.put(":FirstName", AttributeValue.builder().s(event.getFirstName()).build());
+        attributeValues.put(":LastName", AttributeValue.builder().s(event.getLastName()).build());
 
-        DynamoDbEnhancedClient enhancedClient = DynamoDbEnhancedClient.create();
-        DynamoDbTable<AccountModel> accountTable = enhancedClient.table("CustomerAccount", TableSchema.fromBean(AccountModel.class));
-        TransactWriteItemsEnhancedRequest.Builder requestBuilder = TransactWriteItemsEnhancedRequest.builder();
+        Map<String, String> attributeNames = new HashMap<>();
+        attributeNames.put("AccountId", "#AccountId");
+        attributeNames.put("FirstName", "#FirstName");
+        attributeNames.put("LastName", "#LastName");
 
-        PutItemEnhancedRequest<AccountModel> request = PutItemEnhancedRequest.builder(AccountModel.class)
-                .item(account)
-                .conditionExpression(Expression.builder()
-                        .expression("attribute_not_exists(#id)")
-                        .putExpressionName("#id", "AccountId")
-                        .build())
+        UpdateItemRequest updateItemRequest = UpdateItemRequest.builder()
+                .tableName("Account")
+                .key(Collections.singletonMap("AccountId",AttributeValue.builder().s(event.getAccountId().toString()).build()))
+                .updateExpression("SET #AccountId = :AccountId, #FirstName = :FirstName, #LastName = :LastName")
+                .expressionAttributeNames(attributeNames)
+                .expressionAttributeValues(attributeValues)
                 .build();
 
-        requestBuilder.addPutItem(accountTable, request);
-
-        enhancedClient.transactWriteItems(requestBuilder.build());
+        DynamoDbAsyncClient dynamoDbAsyncClient = DynamoDbAsyncClient.create();
+        return dynamoDbAsyncClient.updateItem(updateItemRequest).thenAccept(x -> {});
     }
 }

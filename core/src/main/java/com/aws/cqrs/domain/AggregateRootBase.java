@@ -3,6 +3,7 @@ package com.aws.cqrs.domain;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,8 +46,8 @@ public abstract class AggregateRootBase implements AggregateRoot {
     }
 
     @Override
-    public Iterable<Event> getUncommittedChanges() {
-        return changes;
+    public List<Event> getUncommittedChanges() {
+        return Collections.unmodifiableList(changes);
     }
 
     @Override

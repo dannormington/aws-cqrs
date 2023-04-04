@@ -5,7 +5,7 @@ import java.util.UUID;
 /**
  * Base exception class for aggregate based exceptions
  */
-public abstract class AggregateException extends Exception {
+public abstract class AggregateException extends RuntimeException {
 
     private static final String ERROR_FORMAT = "Aggregate Id : %s - Message: %s";
 

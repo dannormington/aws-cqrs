@@ -40,7 +40,7 @@ public class Account extends AggregateRootBase {
      * @throws IllegalArgumentException
      * @throws HydrationException
      */
-    public void deposit(BigDecimal amount) throws HydrationException {
+    public void deposit(BigDecimal amount) throws IllegalArgumentException, HydrationException {
 
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be greater than zero.");
@@ -56,7 +56,7 @@ public class Account extends AggregateRootBase {
      * @throws IllegalArgumentException
      * @throws HydrationException
      */
-    public void withdraw(BigDecimal amount) throws HydrationException {
+    public void withdraw(BigDecimal amount) throws IllegalArgumentException, HydrationException {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be greater than zero.");
         }

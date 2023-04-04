@@ -1,108 +1,65 @@
 package com.aws.cqrs.infrastructure.persistence;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import com.aws.cqrs.infrastructure.exceptions.AggregateNotFoundException;
-import com.aws.cqrs.infrastructure.exceptions.EventCollisionException;
 import com.aws.cqrs.infrastructure.exceptions.HydrationException;
 import com.aws.cqrs.infrastructure.exceptions.TransactionFailedException;
 import com.aws.cqrs.infrastructure.messaging.Event;
-import com.aws.cqrs.infrastructure.messaging.SqsEventBus;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
-import software.amazon.awssdk.enhanced.dynamodb.*;
-import software.amazon.awssdk.enhanced.dynamodb.model.*;
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
-import software.amazon.awssdk.services.sqs.model.*;
 
 public class DynamoDbEventStore implements EventStore {
     private final String tableName;
-    private final DynamoDbEnhancedClient enhancedClient;
+    private final DynamoDbAsyncClient ddbClient;
     private final Gson gson = new Gson();
-    private final SqsEventBus eventBus;
-    private static final TableSchema<EventModel> eventModelSchema = TableSchema.fromBean(EventModel.class);
 
-    public DynamoDbEventStore(String tableName, String queueName) {
+    public DynamoDbEventStore(String tableName) {
         this.tableName = tableName;
-        enhancedClient = DynamoDbEnhancedClient.create();
-        eventBus = new SqsEventBus(queueName);
+        ddbClient = DynamoDbAsyncClient.create();
     }
 
     @Override
-    public void saveEvents(UUID aggregateId, long expectedVersion, Iterable<Event> events)
-            throws TransactionFailedException {
+    public CompletableFuture<Void> saveEvents(UUID aggregateId, long expectedVersion, List<Event> events) {
 
-        DynamoDbTable<EventModel> eventStoreTable = enhancedClient.table(tableName, eventModelSchema);
-        TransactWriteItemsEnhancedRequest.Builder requestBuilder = TransactWriteItemsEnhancedRequest.builder();
-
-        // Add each event to the batch.
-        List<SendMessageBatchRequestEntry> entries = new ArrayList<>();
-        String groupId = UUID.randomUUID().toString();
+        List<TransactWriteItem> transactWriteItems = new ArrayList<>();
+        TransactWriteItemsRequest.Builder requestBuilder = TransactWriteItemsRequest.builder();
 
         for (Event event : events) {
             expectedVersion++;
 
-            EventModel eventModel = new EventModel();
-            eventModel.setId(aggregateId.toString());
-            eventModel.setVersion(expectedVersion);
-            eventModel.setJson(gson.toJson(event));
-            eventModel.setKind(event.getClass().getName());
+            Map<String, AttributeValue> propertyMap = new HashMap<>();
+            propertyMap.put("Id", AttributeValue.builder().s(aggregateId.toString()).build());
+            propertyMap.put("Version", AttributeValue.builder().n(String.valueOf(expectedVersion)).build());
+            propertyMap.put("Event", AttributeValue.builder().s(gson.toJson(event)).build());
+            propertyMap.put("Kind", AttributeValue.builder().s(event.getClass().toString()).build());
 
             // Create a new request
-            PutItemEnhancedRequest<EventModel> request = PutItemEnhancedRequest.builder(EventModel.class)
-                    .item(eventModel)
-                    .conditionExpression(Expression.builder()
-                            .expression("attribute_not_exists(#id)")
-                            .putExpressionName("#id", "Id")
-                            .build())
+            Put put = Put.builder().item(propertyMap)
+                    .tableName(tableName)
                     .build();
 
-            requestBuilder.addPutItem(eventStoreTable, request);
-
-
-            Map<String, MessageAttributeValue> attributes = new HashMap<>();
-            attributes.put("messageType", MessageAttributeValue.builder().dataType("String").stringValue(eventModel.getKind()).build());
-
-            // Create an SQS message and add it to the list.
-            entries.add(SendMessageBatchRequestEntry.builder()
-                    .id(UUID.randomUUID().toString())
-                    .messageDeduplicationId(UUID.randomUUID().toString())
-                    .messageGroupId(groupId)
-                    .messageAttributes(attributes)
-                    .messageBody(eventModel.getJson()).build());
+            transactWriteItems.add(TransactWriteItem.builder().put(put).build());
         }
 
-        try {
-            // Persist to the event store
-            enhancedClient.transactWriteItems(requestBuilder.build());
-
-            // Publish the events to the queue
-            eventBus.publishEvents(entries);
-        } catch (ConditionalCheckFailedException e) {
-            throw new EventCollisionException(e, aggregateId);
-        } catch (TransactionCanceledException e) {
-            if (e.hasCancellationReasons()) {
-                if (e.cancellationReasons().stream().anyMatch(x -> x.code().equals("ConditionalCheckFailed"))) {
-                    throw new EventCollisionException(e, aggregateId);
-                }
-
-                //TODO: Add cases for other reasons.
-                throw new TransactionFailedException(e, e.cancellationReasons().get(0).code(), aggregateId);
-            }
-
-            // Since there isn't a reason simply throw a transaction failed.
-            throw new TransactionFailedException(e, aggregateId);
-        }
+        return ddbClient.transactWriteItems(requestBuilder.transactItems(transactWriteItems).build())
+                .exceptionally(exception -> {
+                    throw new TransactionFailedException(exception, aggregateId);
+                }).thenAccept(x -> {});
     }
 
     @Override
-    public Iterable<Event> getEvents(UUID aggregateId) throws HydrationException, AggregateNotFoundException {
+    public CompletableFuture<List<Event>> getEvents(UUID aggregateId) throws HydrationException, AggregateNotFoundException {
         // Get the events by the aggregate id.
-        Iterator<EventModel> events = getAggregateEvents(aggregateId);
-
-        // Deserialize the json from each domain event.
-        return getDomainEvents(aggregateId, events);
+        return getAggregateEvents(aggregateId).thenApply(events -> {
+            // Deserialize the json from each domain event.
+            return getDomainEvents(aggregateId, events);
+        });
     }
 
     /**
@@ -113,30 +70,26 @@ public class DynamoDbEventStore implements EventStore {
      * @throws AggregateNotFoundException
      * @throws HydrationException
      */
-    private Iterator<EventModel> getAggregateEvents(UUID aggregateId)
+    private CompletableFuture<List<Map<String, AttributeValue>>> getAggregateEvents(UUID aggregateId)
             throws AggregateNotFoundException, HydrationException {
 
-        DynamoDbTable<EventModel> eventStoreTable = enhancedClient.table(tableName, eventModelSchema);
+        QueryRequest queryRequest = QueryRequest.builder()
+                .consistentRead(true)
+                .tableName(tableName)
+                .keyConditionExpression("#id = :id")
+                .expressionAttributeNames(Collections.singletonMap("#id", "Id"))
+                .expressionAttributeValues(Collections.singletonMap(":id", AttributeValue.builder().s(aggregateId.toString()).build()))
+                .build();
 
-        QueryConditional queryConditional = QueryConditional
-                .keyEqualTo(Key.builder().partitionValue(aggregateId.toString()).build());
 
-        QueryEnhancedRequest request = QueryEnhancedRequest.builder()
-                .queryConditional(queryConditional).consistentRead(true).build();
-
-        try {
-            PageIterable<EventModel> results = eventStoreTable.query(request);
-
-            if (results.items().stream().findFirst().isPresent()) {
-                return results.items().iterator();
-            } else {
-                throw new AggregateNotFoundException(aggregateId);
+        return ddbClient.query(queryRequest).exceptionally(x -> {
+            throw new HydrationException(x, aggregateId);
+        }).thenApply(response -> {
+            if (response.hasItems()) {
+                return response.items().stream().collect(Collectors.toUnmodifiableList());
             }
-        } catch (AggregateNotFoundException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new HydrationException(e, aggregateId);
-        }
+            throw new AggregateNotFoundException(aggregateId);
+        });
     }
 
     /**
@@ -148,25 +101,18 @@ public class DynamoDbEventStore implements EventStore {
      * @return
      * @throws HydrationException
      */
-    private List<Event> getDomainEvents(UUID aggregateId, Iterator<EventModel> eventModels)
+    private List<Event> getDomainEvents(UUID aggregateId, List<Map<String, AttributeValue>> eventModels)
             throws HydrationException {
 
-        List<Event> history = new ArrayList<>();
-
-        while (eventModels.hasNext()) {
-            EventModel eventModel = eventModels.next();
-
+        return eventModels.stream().map(attributeValueMap -> {
             try {
-                Event event = (Event) gson.fromJson(eventModel.getJson(), Class.forName(eventModel.getKind()));
-                history.add(event);
+                return (Event) gson.fromJson(attributeValueMap.get("Event").s(), Class.forName(attributeValueMap.get("Kind").s()));
             } catch (JsonSyntaxException | ClassNotFoundException e) {
                 /*
                  * Throw a hydration exception along with the aggregate id and the message
                  */
                 throw new HydrationException(e, aggregateId);
             }
-        }
-
-        return history;
+        }).collect(Collectors.toUnmodifiableList());
     }
 }

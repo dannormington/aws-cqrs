@@ -1,5 +1,6 @@
 package com.aws.cqrs.domain;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.aws.cqrs.infrastructure.exceptions.HydrationException;
@@ -18,12 +19,12 @@ public interface AggregateRoot {
     UUID getId();
 
     /**
-     * Gets all change events since the original hydration. If there are no changes
+     * Gets an immutable list of all change events since the original hydration. If there are no changes
      * then null is returned
      *
      * @return The list of uncommitted changes.
      */
-    Iterable<Event> getUncommittedChanges();
+    List<Event> getUncommittedChanges();
 
     /**
      * Mark all changes a committed

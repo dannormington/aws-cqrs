@@ -1,9 +1,10 @@
 package com.aws.cqrs.infrastructure.persistence;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import com.aws.cqrs.infrastructure.exceptions.AggregateNotFoundException;
-import com.aws.cqrs.infrastructure.exceptions.EventCollisionException;
 import com.aws.cqrs.infrastructure.exceptions.HydrationException;
 import com.aws.cqrs.infrastructure.exceptions.TransactionFailedException;
 import com.aws.cqrs.infrastructure.messaging.Event;
@@ -19,9 +20,9 @@ interface EventStore {
      * @param aggregateId     The aggregate id.
      * @param expectedVersion The expected version when persisting state.
      * @param events          The list of events to persist.
-     * @throws EventCollisionException
+     * @throws TransactionFailedException
      */
-    void saveEvents(UUID aggregateId, long expectedVersion, Iterable<Event> events) throws TransactionFailedException;
+    CompletableFuture<Void> saveEvents(UUID aggregateId, long expectedVersion, List<Event> events) throws TransactionFailedException;
 
     /**
      * Retrieves the events
@@ -31,5 +32,5 @@ interface EventStore {
      * @throws HydrationException
      * @throws AggregateNotFoundException
      */
-    Iterable<Event> getEvents(UUID aggregateId) throws HydrationException, AggregateNotFoundException;
+    CompletableFuture<List<Event>> getEvents(UUID aggregateId) throws HydrationException, AggregateNotFoundException;
 }

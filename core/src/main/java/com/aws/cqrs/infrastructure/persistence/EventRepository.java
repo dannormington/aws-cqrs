@@ -1,7 +1,9 @@
 package com.aws.cqrs.infrastructure.persistence;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import com.aws.cqrs.domain.AggregateRoot;
 import com.aws.cqrs.infrastructure.exceptions.AggregateNotFoundException;
@@ -31,39 +33,39 @@ public class EventRepository<T extends AggregateRoot> implements Repository<T> {
      *
      * @param aClass    The type the repository is working with.
      * @param tableName The name of the table.
-     * @param queueName The name of the queue to publish messages to.
      */
-    public EventRepository(Class<T> aClass, String tableName, String queueName) {
+    public EventRepository(Class<T> aClass, String tableName) {
         this.aClass = aClass;
-        eventStore = new DynamoDbEventStore(tableName, queueName);
+        eventStore = new DynamoDbEventStore(tableName);
     }
 
     @Override
-    public void save(T aggregate) throws TransactionFailedException {
-        eventStore.saveEvents(aggregate.getId(), aggregate.getExpectedVersion(), aggregate.getUncommittedChanges());
-        aggregate.markChangesAsCommitted();
+    public CompletableFuture<Void> save(T aggregate) throws TransactionFailedException {
+        return eventStore.saveEvents(aggregate.getId(), aggregate.getExpectedVersion(), aggregate.getUncommittedChanges())
+                .thenAccept(x -> {
+                    aggregate.markChangesAsCommitted();
+                });
     }
 
     @Override
-    public T getById(UUID id) throws HydrationException, AggregateNotFoundException {
-
+    public CompletableFuture<T> getById(UUID id) throws HydrationException, AggregateNotFoundException {
         /*
          * get the events from the event store
          */
-        Iterable<Event> history = eventStore.getEvents(id);
+        return eventStore.getEvents(id).thenApply(history -> {
+            /*
+             * Create a new instance of the aggregate
+             */
+            T aggregate;
+            try {
+                aggregate = aClass.getConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                throw new HydrationException(id);
+            }
 
-        /*
-         * Create a new instance of the aggregate
-         */
-        T aggregate;
-        try {
-            aggregate = aClass.getConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new HydrationException(id);
-        }
+            aggregate.loadFromHistory(history);
 
-        aggregate.loadFromHistory(history);
-
-        return aggregate;
+            return aggregate;
+        });
     }
 }
