@@ -19,9 +19,9 @@ public class DynamoDbEventStore implements EventStore {
     private final DynamoDbAsyncClient ddbClient;
     private final Gson gson = new Gson();
 
-    public DynamoDbEventStore(String tableName) {
+    public DynamoDbEventStore(String tableName, DynamoDbAsyncClient ddbClient) {
         this.tableName = tableName;
-        ddbClient = DynamoDbAsyncClient.create();
+        this.ddbClient = ddbClient;
     }
 
     @Override

@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 class AccountTest {
 
     private Gson gson;
@@ -48,6 +50,22 @@ class AccountTest {
     }
 
     @Test
+    void when_invalidAccountCreated_expect_exception() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Account.create(null, null, null);
+        });
+    }
+
+    @Test
+    void when_deposit_invalid_amount_expect_exception() {
+        Account account = new Account();
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            account.deposit(BigDecimal.ZERO);
+        });
+    }
+
+    @Test
     void when_deposited_expect_oneEvent() throws HydrationException {
         Account account = new Account();
         account.deposit(new BigDecimal("12.55"));
@@ -58,7 +76,7 @@ class AccountTest {
             numberOfChanges++;
         }
 
-        Assertions.assertEquals(numberOfChanges, 1);
+        Assertions.assertEquals(1, numberOfChanges);
     }
 
     @Test
@@ -77,6 +95,15 @@ class AccountTest {
         }
 
         Assertions.assertEquals(depositedAmount, amount);
+    }
+
+    @Test
+    void when_withdraw_invalid_amount_expect_exception() {
+        Account account = new Account();
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            account.withdraw(BigDecimal.ZERO);
+        });
     }
 
     @Test

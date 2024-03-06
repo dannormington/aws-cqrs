@@ -1,5 +1,6 @@
-package com.aws.cqrs.application;
+package com.aws.cqrs.ddbconsumer.eventhandlers;
 
+import com.aws.cqrs.application.EventHandler;
 import com.aws.cqrs.domain.Withdrew;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -9,6 +10,11 @@ import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
 public class WithdrewEventHandler implements EventHandler<Withdrew> {
+    private final DynamoDbAsyncClient dynamoDbAsyncClient;
+
+    public WithdrewEventHandler(DynamoDbAsyncClient dynamoDbAsyncClient) {
+        this.dynamoDbAsyncClient = dynamoDbAsyncClient;
+    }
 
     @Override
     public CompletableFuture<Void> handle(Withdrew event) {
@@ -20,7 +26,6 @@ public class WithdrewEventHandler implements EventHandler<Withdrew> {
                 .expressionAttributeValues(Collections.singletonMap(":balance", AttributeValue.builder().n(event.getAmount().negate().toString()).build()))
                 .build();
 
-        DynamoDbAsyncClient dynamoDbAsyncClient = DynamoDbAsyncClient.create();
         return dynamoDbAsyncClient.updateItem(updateItemRequest).thenAccept(x -> {});
     }
 }

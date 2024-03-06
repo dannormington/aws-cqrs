@@ -18,7 +18,16 @@ public class AccountService {
 
     private static final String EVENT_STORE_TABLE = "AccountEventStore";
 
-    private final Repository<Account> repository = new EventRepository<>(Account.class, EVENT_STORE_TABLE);
+    private final Repository<Account> repository;
+
+    /**
+     * Default constructor.
+     *
+     * @param repository The account repository.
+     */
+    public AccountService(Repository<Account> repository) {
+        this.repository = repository;
+    }
 
     /**
      * Create a new account.
@@ -44,11 +53,8 @@ public class AccountService {
     public CompletableFuture<Void> deposit(UUID accountId, BigDecimal amount)
             throws HydrationException, AggregateNotFoundException, TransactionFailedException {
         return repository.getById(accountId).thenCompose(account -> {
-            if (account != null) {
                 account.deposit(amount);
                 return repository.save(account);
-            }
-            return CompletableFuture.completedFuture(null);
         });
     }
 

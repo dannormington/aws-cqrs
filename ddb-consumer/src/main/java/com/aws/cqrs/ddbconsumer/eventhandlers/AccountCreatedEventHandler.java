@@ -1,5 +1,6 @@
-package com.aws.cqrs.application;
+package com.aws.cqrs.ddbconsumer.eventhandlers;
 
+import com.aws.cqrs.application.EventHandler;
 import com.aws.cqrs.domain.AccountCreated;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
@@ -10,6 +11,11 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class AccountCreatedEventHandler implements EventHandler<AccountCreated> {
+    private final DynamoDbAsyncClient dynamoDbAsyncClient;
+
+    public AccountCreatedEventHandler(DynamoDbAsyncClient dynamoDbAsyncClient) {
+        this.dynamoDbAsyncClient = dynamoDbAsyncClient;
+    }
 
     @Override
     public CompletableFuture<Void> handle(AccountCreated event) {
@@ -31,7 +37,6 @@ public class AccountCreatedEventHandler implements EventHandler<AccountCreated> 
                 .expressionAttributeValues(attributeValues)
                 .build();
 
-        DynamoDbAsyncClient dynamoDbAsyncClient = DynamoDbAsyncClient.create();
         return dynamoDbAsyncClient.updateItem(updateItemRequest).thenAccept(x -> {});
     }
 }

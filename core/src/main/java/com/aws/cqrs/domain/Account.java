@@ -1,6 +1,7 @@
 package com.aws.cqrs.domain;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.UUID;
 
 import com.aws.cqrs.infrastructure.exceptions.HydrationException;
@@ -85,6 +86,19 @@ public class Account extends AggregateRootBase {
         }
 
         return new Account(accountId, firstName, lastName);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Account account = (Account) o;
+        return id == account.id && getExpectedVersion() == account.getExpectedVersion() && balance == account.balance;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, getExpectedVersion(), balance);
     }
 
     /**

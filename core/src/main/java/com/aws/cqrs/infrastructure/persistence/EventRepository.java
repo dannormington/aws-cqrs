@@ -10,6 +10,7 @@ import com.aws.cqrs.infrastructure.exceptions.AggregateNotFoundException;
 import com.aws.cqrs.infrastructure.exceptions.HydrationException;
 import com.aws.cqrs.infrastructure.exceptions.TransactionFailedException;
 import com.aws.cqrs.infrastructure.messaging.Event;
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 
 /**
  * Implementation of a simple event repository
@@ -32,11 +33,11 @@ public class EventRepository<T extends AggregateRoot> implements Repository<T> {
      * Default Constructor
      *
      * @param aClass    The type the repository is working with.
-     * @param tableName The name of the table.
+     * @param eventStore The event store.
      */
-    public EventRepository(Class<T> aClass, String tableName) {
+    public EventRepository(Class<T> aClass, EventStore eventStore) {
         this.aClass = aClass;
-        eventStore = new DynamoDbEventStore(tableName);
+        this.eventStore = eventStore;
     }
 
     @Override
