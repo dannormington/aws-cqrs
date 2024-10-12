@@ -14,6 +14,7 @@ public class Overdrawn implements Event, Serializable {
     private UUID accountId;
     private UUID transactionId;
     private BigDecimal serviceCharge;
+    private BigDecimal newBalance;
 
     /**
      * Default Constructor for serialization.
@@ -27,11 +28,13 @@ public class Overdrawn implements Event, Serializable {
      * @param accountId     The account id.
      * @param transactionId The transaction id.
      * @param serviceCharge The service charge.
+     * @param newBalance    The new account balance.
      */
-    public Overdrawn(UUID accountId, UUID transactionId, BigDecimal serviceCharge) {
+    public Overdrawn(UUID accountId, UUID transactionId, BigDecimal serviceCharge, BigDecimal newBalance) {
         this.accountId = accountId;
         this.transactionId = transactionId;
         this.serviceCharge = serviceCharge;
+        this.newBalance = newBalance;
     }
 
     /**
@@ -42,6 +45,11 @@ public class Overdrawn implements Event, Serializable {
     public UUID getAccountId() {
         return this.accountId;
     }
+
+    /**
+     * @return The account balance.
+     */
+    public BigDecimal getNewBalance() { return this.newBalance; }
 
     /**
      * Get the Transaction id.

@@ -20,8 +20,9 @@ public class Deposited extends Transaction {
      *
      * @param accountId The account id.
      * @param amount    The amount deposited.
+     * @param balance   The account balance.
      */
-    public Deposited(UUID accountId, BigDecimal amount) {
-        super(accountId, amount);
+    public Deposited(UUID accountId, BigDecimal amount, BigDecimal balance) {
+        super(accountId, amount, balance);
     }
 }

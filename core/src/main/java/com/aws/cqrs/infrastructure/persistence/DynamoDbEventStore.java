@@ -17,11 +17,12 @@ import software.amazon.awssdk.services.dynamodb.model.*;
 public class DynamoDbEventStore implements EventStore {
     private final String tableName;
     private final DynamoDbAsyncClient ddbClient;
-    private final Gson gson = new Gson();
+    private final Gson gson;
 
-    public DynamoDbEventStore(String tableName, DynamoDbAsyncClient ddbClient) {
+    public DynamoDbEventStore(String tableName, DynamoDbAsyncClient ddbClient, Gson gson) {
         this.tableName = tableName;
         this.ddbClient = ddbClient;
+        this.gson = gson;
     }
 
     @Override
@@ -37,7 +38,7 @@ public class DynamoDbEventStore implements EventStore {
             propertyMap.put("Id", AttributeValue.builder().s(aggregateId.toString()).build());
             propertyMap.put("Version", AttributeValue.builder().n(String.valueOf(expectedVersion)).build());
             propertyMap.put("Event", AttributeValue.builder().s(gson.toJson(event)).build());
-            propertyMap.put("Kind", AttributeValue.builder().s(event.getClass().toString()).build());
+            propertyMap.put("Kind", AttributeValue.builder().s(event.getClass().getName()).build());
 
             // Create a new request
             Put put = Put.builder().item(propertyMap)
@@ -81,7 +82,6 @@ public class DynamoDbEventStore implements EventStore {
                 .expressionAttributeValues(Collections.singletonMap(":id", AttributeValue.builder().s(aggregateId.toString()).build()))
                 .build();
 
-
         return ddbClient.query(queryRequest).exceptionally(x -> {
             throw new HydrationException(x, aggregateId);
         }).thenApply(response -> {
@@ -106,7 +106,8 @@ public class DynamoDbEventStore implements EventStore {
 
         return eventModels.stream().map(attributeValueMap -> {
             try {
-                return (Event) gson.fromJson(attributeValueMap.get("Event").s(), Class.forName(attributeValueMap.get("Kind").s()));
+                Class<?> aClass = Class.forName(attributeValueMap.get("Kind").s());
+                return (Event) gson.fromJson(attributeValueMap.get("Event").s(), aClass);
             } catch (JsonSyntaxException | ClassNotFoundException e) {
                 /*
                  * Throw a hydration exception along with the aggregate id and the message

@@ -9,8 +9,10 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class AccountTest {
@@ -174,5 +176,21 @@ class AccountTest {
             }
         }
         Assertions.assertTrue(balance.compareTo(BigDecimal.ZERO) > 0);
+    }
+
+    @Test
+    void when_getHashcode_expect_match() {
+        UUID accountId = UUID.randomUUID();
+        int expectedHash = Objects.hash(accountId, 0, 0);
+        Account account = Account.create(accountId, "John", "Smith");
+        assertEquals(expectedHash, account.hashCode());
+    }
+
+    @Test
+    void when_equals_expect_success() {
+        UUID accountId = UUID.randomUUID();
+        Account account = Account.create(accountId, "John", "Smith");
+        Account account2 = Account.create(accountId, "Amy", "Smith");
+        assertEquals(account, account2);
     }
 }

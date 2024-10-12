@@ -16,6 +16,7 @@ public abstract class Transaction implements Event, Serializable {
     private UUID transactionId;
     private BigDecimal amount;
     private OffsetDateTime date;
+    private BigDecimal newBalance;
 
     /**
      * Default Constructor for serialization.
@@ -28,12 +29,14 @@ public abstract class Transaction implements Event, Serializable {
      *
      * @param accountId The account id.
      * @param amount    The amount of the transaction.
+     * @param newBalance   The account new balance.
      */
-    protected Transaction(UUID accountId, BigDecimal amount) {
+    protected Transaction(UUID accountId, BigDecimal amount, BigDecimal newBalance) {
         this.accountId = accountId;
         this.transactionId = UUID.randomUUID();
         this.date = OffsetDateTime.now();
         this.amount = amount;
+        this.newBalance = newBalance;
     }
 
     /**
@@ -56,6 +59,11 @@ public abstract class Transaction implements Event, Serializable {
     public BigDecimal getAmount() {
         return this.amount;
     }
+
+    /**
+     * @return The account balance.
+     */
+    public BigDecimal getNewBalance() { return this.newBalance; }
 
     /**
      * @return The transaction date.

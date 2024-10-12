@@ -21,8 +21,9 @@ public class Withdrew extends Transaction {
      *
      * @param accountId The account id.
      * @param amount    The amount withdrawn.
+     * @param balance   The account balance.
      */
-    public Withdrew(UUID accountId, BigDecimal amount) {
-        super(accountId, amount);
+    public Withdrew(UUID accountId, BigDecimal amount, BigDecimal balance) {
+        super(accountId, amount, balance);
     }
 }

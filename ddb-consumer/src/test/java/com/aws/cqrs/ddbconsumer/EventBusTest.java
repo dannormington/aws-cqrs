@@ -50,7 +50,7 @@ class EventBusTest {
         EventBus eventBus = new EventBus();
         DepositedEventHandler depositedEventHandler = mock(DepositedEventHandler.class);
         eventBus.register(Deposited.class, depositedEventHandler);
-        Deposited deposited = new Deposited(UUID.randomUUID(), new BigDecimal(100));
+        Deposited deposited = new Deposited(UUID.randomUUID(), new BigDecimal(100), new BigDecimal(100));
         when(depositedEventHandler.handle(deposited)).thenReturn(CompletableFuture.completedFuture(null));
 
         // Act
@@ -64,7 +64,7 @@ class EventBusTest {
     void when_handle_not_registered_expect_failure() {
         // Arrange
         EventBus eventBus = new EventBus();
-        Deposited deposited = new Deposited(UUID.randomUUID(), new BigDecimal(100));
+        Deposited deposited = new Deposited(UUID.randomUUID(), new BigDecimal(100), new BigDecimal(100));
 
         // Act
         Boolean handled = eventBus.handle(deposited).join();

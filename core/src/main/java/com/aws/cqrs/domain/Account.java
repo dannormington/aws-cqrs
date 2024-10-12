@@ -47,7 +47,8 @@ public class Account extends AggregateRootBase {
             throw new IllegalArgumentException("Amount must be greater than zero.");
         }
 
-        applyChange(new Deposited(this.getId(), amount));
+        final BigDecimal newBalance = this.balance.add(amount);
+        applyChange(new Deposited(this.getId(), amount, newBalance));
     }
 
     /**
@@ -62,11 +63,13 @@ public class Account extends AggregateRootBase {
             throw new IllegalArgumentException("Amount must be greater than zero.");
         }
 
-        Withdrew withdrew = new Withdrew(this.getId(), amount);
+        final BigDecimal newBalance = this.balance.subtract(amount);
+        Withdrew withdrew = new Withdrew(this.getId(), amount, newBalance);
         applyChange(withdrew);
 
-        if (balance.compareTo(BigDecimal.ZERO) < 0) {
-            applyChange(new Overdrawn(this.getId(), withdrew.getTransactionId(), OVERDRAFT_CHARGE));
+        if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
+            final BigDecimal balanceAfterOverdraw = newBalance.subtract(OVERDRAFT_CHARGE);
+            applyChange(new Overdrawn(this.getId(), withdrew.getTransactionId(), OVERDRAFT_CHARGE, balanceAfterOverdraw));
         }
     }
 
@@ -118,7 +121,7 @@ public class Account extends AggregateRootBase {
      */
     @SuppressWarnings("unused")
     private void apply(Deposited event) {
-        balance = balance.add(event.getAmount());
+        balance = event.getNewBalance();
     }
 
     /**
@@ -128,7 +131,7 @@ public class Account extends AggregateRootBase {
      */
     @SuppressWarnings("unused")
     private void apply(Withdrew event) {
-        balance = balance.subtract(event.getAmount());
+        balance = event.getNewBalance();
     }
 
     /**
@@ -138,6 +141,6 @@ public class Account extends AggregateRootBase {
      */
     @SuppressWarnings("unused")
     private void apply(Overdrawn event) {
-        balance = balance.subtract(event.getServiceCharge());
+        balance = event.getNewBalance();
     }
 }

@@ -21,9 +21,9 @@ public class WithdrewEventHandler implements EventHandler<Withdrew> {
         UpdateItemRequest updateItemRequest = UpdateItemRequest.builder()
                 .tableName("Account")
                 .key(Collections.singletonMap("AccountId", AttributeValue.builder().s(event.getAccountId().toString()).build()))
-                .updateExpression("ADD #balance :balance")
-                .expressionAttributeNames(Collections.singletonMap("Balance", "#balance"))
-                .expressionAttributeValues(Collections.singletonMap(":balance", AttributeValue.builder().n(event.getAmount().negate().toString()).build()))
+                .updateExpression("SET #Balance :Balance")
+                .expressionAttributeNames(Collections.singletonMap("Balance", "#Balance"))
+                .expressionAttributeValues(Collections.singletonMap(":Balance", AttributeValue.builder().n(event.getNewBalance().toString()).build()))
                 .build();
 
         return dynamoDbAsyncClient.updateItem(updateItemRequest).thenAccept(x -> {});

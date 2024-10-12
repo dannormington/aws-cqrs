@@ -12,7 +12,7 @@ import com.aws.cqrs.infrastructure.messaging.Event;
 /**
  * Interface to support basic event store functionality
  */
-interface EventStore {
+public interface EventStore {
 
     /**
      * Persist the changes

@@ -2,7 +2,6 @@ package com.aws.cqrs.infrastructure.persistence;
 
 import com.aws.cqrs.domain.Account;
 import com.aws.cqrs.domain.AccountCreated;
-import com.aws.cqrs.domain.AggregateRoot;
 import com.aws.cqrs.domain.AggregateRootBase;
 import com.aws.cqrs.infrastructure.exceptions.HydrationException;
 import com.aws.cqrs.infrastructure.messaging.Event;

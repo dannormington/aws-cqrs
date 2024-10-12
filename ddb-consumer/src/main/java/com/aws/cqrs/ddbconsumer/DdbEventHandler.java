@@ -4,11 +4,11 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.amazonaws.services.lambda.runtime.events.models.dynamodb.AttributeValue;
+import com.aws.cqrs.ddbconsumer.exceptions.DeserializationException;
 import com.aws.cqrs.infrastructure.messaging.Event;
 import com.google.gson.Gson;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -26,13 +26,13 @@ public class DdbEventHandler implements RequestHandler<DynamodbEvent, Void> {
     @Override
     public Void handleRequest(DynamodbEvent dynamodbEvent, Context context) {
 
+        // Group the events by the aggregate id.
         Map<String, List<DynamodbEvent.DynamodbStreamRecord>> groupedRecords = dynamodbEvent.getRecords().stream().collect(Collectors.groupingBy(record -> record.getDynamodb().getKeys().get("Id").getS()));
 
-        List<CompletableFuture<Void>> cfs = new ArrayList<>();
+        // Process each aggregate asynchronously while maintaining order within the aggregate.
+        List<CompletableFuture<Void>> futures = groupedRecords.entrySet().stream().map(entry -> processEvents(entry.getKey(), entry.getValue())).collect(Collectors.toList());
 
-        groupedRecords.entrySet().forEach(entry -> cfs.add(processEvents(entry.getKey(), entry.getValue())));
-
-        return CompletableFuture.allOf(cfs.toArray(new CompletableFuture[0])).join();
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 
     private CompletableFuture<Void> processEvents(String id, List<DynamodbEvent.DynamodbStreamRecord> records) {
@@ -44,9 +44,10 @@ public class DdbEventHandler implements RequestHandler<DynamodbEvent, Void> {
 
                 try {
                     Event event = (Event)gson.fromJson(eventData, Class.forName(kind));
+                    // Purposely handling these events synchronously as order matters
                     eventBus.handle(event).join();
                 } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+                    throw new DeserializationException(e);
                 }
             });
 

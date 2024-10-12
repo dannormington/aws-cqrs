@@ -12,6 +12,7 @@
     <modules>
         <module>core</module>
         <module>ddb-consumer</module>
+        <module>api</module>
     </modules>
 
     <properties>

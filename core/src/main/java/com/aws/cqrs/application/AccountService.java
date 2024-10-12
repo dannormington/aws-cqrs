@@ -15,9 +15,6 @@ import com.aws.cqrs.domain.Account;
  * The purpose of this service is to handle account based transactions.
  */
 public class AccountService {
-
-    private static final String EVENT_STORE_TABLE = "AccountEventStore";
-
     private final Repository<Account> repository;
 
     /**
