@@ -30,12 +30,12 @@ public class DdbEventHandler implements RequestHandler<DynamodbEvent, Void> {
         Map<String, List<DynamodbEvent.DynamodbStreamRecord>> groupedRecords = dynamodbEvent.getRecords().stream().collect(Collectors.groupingBy(record -> record.getDynamodb().getKeys().get("Id").getS()));
 
         // Process each aggregate asynchronously while maintaining order within the aggregate.
-        List<CompletableFuture<Void>> futures = groupedRecords.entrySet().stream().map(entry -> processEvents(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+        List<CompletableFuture<Void>> futures = groupedRecords.values().stream().map(events -> processEvents(events)).collect(Collectors.toList());
 
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 
-    private CompletableFuture<Void> processEvents(String id, List<DynamodbEvent.DynamodbStreamRecord> records) {
+    private CompletableFuture<Void> processEvents(List<DynamodbEvent.DynamodbStreamRecord> records) {
         return CompletableFuture.supplyAsync(() -> {
             records.forEach(record -> {
                 Map<String, AttributeValue> attributes = record.getDynamodb().getNewImage();

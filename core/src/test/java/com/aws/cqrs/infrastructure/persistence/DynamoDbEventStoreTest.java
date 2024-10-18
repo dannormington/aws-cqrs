@@ -3,12 +3,12 @@ package com.aws.cqrs.infrastructure.persistence;
 import com.aws.cqrs.application.OffsetDateTimeDeserializer;
 import com.aws.cqrs.domain.AccountCreated;
 import com.aws.cqrs.domain.Deposited;
+import com.aws.cqrs.infrastructure.exceptions.AggregateNotFoundException;
+import com.aws.cqrs.infrastructure.exceptions.HydrationException;
 import com.aws.cqrs.infrastructure.exceptions.TransactionFailedException;
 import com.aws.cqrs.infrastructure.messaging.Event;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializer;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
@@ -104,17 +104,8 @@ class DynamoDbEventStoreTest {
         UUID accountId = UUID.randomUUID();
         AccountCreated accountCreated = new AccountCreated(accountId, "John", "Doe");
         Deposited deposited = new Deposited(accountId,new BigDecimal(100), new BigDecimal(100));
-        List<Event> expectedEvents = List.of(accountCreated, deposited);
         DynamoDbAsyncClient dynamoDbAsyncClient = mock(DynamoDbAsyncClient.class);
         DynamoDbEventStore eventStore = new DynamoDbEventStore(TABLE_NAME, dynamoDbAsyncClient, gson);
-
-        QueryRequest queryRequest = QueryRequest.builder()
-                .consistentRead(true)
-                .tableName(TABLE_NAME)
-                .keyConditionExpression("#id = :id")
-                .expressionAttributeNames(Collections.singletonMap("#id", "Id"))
-                .expressionAttributeValues(Collections.singletonMap(":id", AttributeValue.builder().s(accountId.toString()).build()))
-                .build();
 
         Map<String, AttributeValue> accountCreatedMap = new HashMap<>();
         accountCreatedMap.put("Id", AttributeValue.builder().s(accountId.toString()).build());
@@ -140,7 +131,98 @@ class DynamoDbEventStoreTest {
         assertEquals(2, events.size());
         assertEquals(AccountCreated.class, events.get(0).getClass());
         assertEquals(Deposited.class, events.get(1).getClass());
+    }
 
+    @Test
+    void when_getEvents_expect_AggregateNotFoundException() {
+        // Arrange
+        DynamoDbAsyncClient dynamoDbAsyncClient = mock(DynamoDbAsyncClient.class);
+        DynamoDbEventStore eventStore = new DynamoDbEventStore(TABLE_NAME, dynamoDbAsyncClient, gson);
+        when(dynamoDbAsyncClient.query(any(QueryRequest.class))).thenReturn(CompletableFuture.completedFuture(QueryResponse.builder().build()));
+
+        // Act & Assert
+        assertThrows(AggregateNotFoundException.class, () -> {
+            try {
+                eventStore.getEvents(UUID.randomUUID()).join();
+            } catch (CompletionException x) {
+                throw x.getCause();
+            }
+        });
+    }
+
+    @Test
+    void when_getEvents_expect_HydrationException() {
+        // Arrange
+        DynamoDbAsyncClient dynamoDbAsyncClient = mock(DynamoDbAsyncClient.class);
+        DynamoDbEventStore eventStore = new DynamoDbEventStore(TABLE_NAME, dynamoDbAsyncClient, gson);
+
+        CompletableFuture badCf = new CompletableFuture();
+        badCf.completeExceptionally(new CompletionException(ProvisionedThroughputExceededException.builder().build()));
+        doReturn(badCf).when(dynamoDbAsyncClient).query(any(QueryRequest.class));
+
+        // Act & Assert
+        assertThrows(HydrationException.class, () -> {
+            try {
+                eventStore.getEvents(UUID.randomUUID()).join();
+            } catch (CompletionException x) {
+                throw x.getCause();
+            }
+        });
+    }
+
+    @Test
+    void when_getEvents_ClassNotFoundException_expect_HydrationException() {
+        // Arrange
+        UUID accountId = UUID.randomUUID();
+        AccountCreated accountCreated = new AccountCreated(accountId, "John", "Doe");
+        DynamoDbAsyncClient dynamoDbAsyncClient = mock(DynamoDbAsyncClient.class);
+        DynamoDbEventStore eventStore = new DynamoDbEventStore(TABLE_NAME, dynamoDbAsyncClient, gson);
+
+        Map<String, AttributeValue> accountCreatedMap = new HashMap<>();
+        accountCreatedMap.put("Id", AttributeValue.builder().s(accountId.toString()).build());
+        accountCreatedMap.put("Version", AttributeValue.builder().n(String.valueOf(1)).build());
+        accountCreatedMap.put("Event", AttributeValue.builder().s(gson.toJson(accountCreated)).build());
+        accountCreatedMap.put("Kind", AttributeValue.builder().s("class-not-found").build());
+
+        QueryResponse queryResponse = QueryResponse.builder()
+                .items(accountCreatedMap)
+                .build();
+        when(dynamoDbAsyncClient.query(any(QueryRequest.class))).thenReturn(CompletableFuture.completedFuture(queryResponse));
+
+        assertThrows(HydrationException.class, () -> {
+            try {
+                eventStore.getEvents(UUID.randomUUID()).join();
+            } catch (CompletionException x) {
+                throw x.getCause();
+            }
+        });
+    }
+
+    @Test
+    void when_getEvents_JsonException_expect_HydrationException() {
+        // Arrange
+        UUID accountId = UUID.randomUUID();
+        DynamoDbAsyncClient dynamoDbAsyncClient = mock(DynamoDbAsyncClient.class);
+        DynamoDbEventStore eventStore = new DynamoDbEventStore(TABLE_NAME, dynamoDbAsyncClient, gson);
+
+        Map<String, AttributeValue> accountCreatedMap = new HashMap<>();
+        accountCreatedMap.put("Id", AttributeValue.builder().s(accountId.toString()).build());
+        accountCreatedMap.put("Version", AttributeValue.builder().n(String.valueOf(1)).build());
+        accountCreatedMap.put("Event", AttributeValue.builder().s("{invalid-json}}").build());
+        accountCreatedMap.put("Kind", AttributeValue.builder().s(AccountCreated.class.getName()).build());
+
+        QueryResponse queryResponse = QueryResponse.builder()
+                .items(accountCreatedMap)
+                .build();
+        when(dynamoDbAsyncClient.query(any(QueryRequest.class))).thenReturn(CompletableFuture.completedFuture(queryResponse));
+
+        assertThrows(HydrationException.class, () -> {
+            try {
+                eventStore.getEvents(UUID.randomUUID()).join();
+            } catch (CompletionException x) {
+                throw x.getCause();
+            }
+        });
     }
 
 }
