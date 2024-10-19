@@ -9,7 +9,9 @@ located at https://github.com/gregoryyoung/m-r
 ## AWS Technologies
 - AWS Java SDK v2
 - DynamoDB
+- DynamoDB Streams
 - Lambda
+- SQS
 
 ## TODO
 - Complete API
