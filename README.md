@@ -12,6 +12,5 @@ located at https://github.com/gregoryyoung/m-r
 - Lambda
 
 ## TODO
-- Add handler to subscribe to DDB stream to update read models.
 - Complete API
-- Unit tests
+- Create stack templates
