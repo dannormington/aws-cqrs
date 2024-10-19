@@ -10,27 +10,26 @@ import com.aws.cqrs.domain.Overdrawn;
 import com.aws.cqrs.domain.Withdrew;
 import dagger.Module;
 import dagger.Provides;
-import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
-
 import javax.inject.Singleton;
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 
 @Module
 public class DdbConsumerModule {
 
-    @Provides
-    @Singleton
-    public DynamoDbAsyncClient provideDynamoDbAsyncClient() {
-        return DynamoDbAsyncClient.create();
-    }
+  @Provides
+  @Singleton
+  public DynamoDbAsyncClient provideDynamoDbAsyncClient() {
+    return DynamoDbAsyncClient.create();
+  }
 
-    @Provides
-    @Singleton
-    public EventBus provideDomainEventHandler(DynamoDbAsyncClient dynamoDbAsyncClient) {
-        EventBus eventBus = new EventBus();
-        eventBus.register(AccountCreated.class, new AccountCreatedEventHandler(dynamoDbAsyncClient));
-        eventBus.register(Deposited.class, new DepositedEventHandler(dynamoDbAsyncClient));
-        eventBus.register(Withdrew.class, new WithdrewEventHandler(dynamoDbAsyncClient));
-        eventBus.register(Overdrawn.class, new OverdrawnEventHandler(dynamoDbAsyncClient));
-        return eventBus;
-    }
+  @Provides
+  @Singleton
+  public EventBus provideDomainEventHandler(DynamoDbAsyncClient dynamoDbAsyncClient) {
+    EventBus eventBus = new EventBus();
+    eventBus.register(AccountCreated.class, new AccountCreatedEventHandler(dynamoDbAsyncClient));
+    eventBus.register(Deposited.class, new DepositedEventHandler(dynamoDbAsyncClient));
+    eventBus.register(Withdrew.class, new WithdrewEventHandler(dynamoDbAsyncClient));
+    eventBus.register(Overdrawn.class, new OverdrawnEventHandler(dynamoDbAsyncClient));
+    return eventBus;
+  }
 }
