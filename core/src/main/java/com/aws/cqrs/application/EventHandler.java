@@ -1,7 +1,6 @@
 package com.aws.cqrs.application;
 
 import com.aws.cqrs.infrastructure.messaging.Event;
-
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -10,10 +9,10 @@ import java.util.concurrent.CompletableFuture;
  * @param <T>
  */
 public interface EventHandler<T extends Event> {
-    /**
-     * Handle an event.
-     *
-     * @param event
-     */
-    CompletableFuture<Void> handle(T event);
+  /**
+   * Handle an event.
+   *
+   * @param event
+   */
+  CompletableFuture<Void> handle(T event);
 }

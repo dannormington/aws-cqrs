@@ -1,13 +1,13 @@
 package com.aws.cqrs.api.response;
 
 public class ErrorResponse {
-    private final String message;
+  private final String message;
 
-    public ErrorResponse(String message) {
-        this.message = message;
-    }
+  public ErrorResponse(String message) {
+    this.message = message;
+  }
 
-    public String getMessage() {
-        return message;
-    }
+  public String getMessage() {
+    return message;
+  }
 }

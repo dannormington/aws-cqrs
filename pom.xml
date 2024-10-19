@@ -28,6 +28,24 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
             </plugin>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>2.43.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>apply</goal>
+                        </goals>
+                        <phase>validate</phase> <!-- Format during the validate phase -->
+                    </execution>
+                </executions>
+                <configuration>
+                    <java>
+                        <googleJavaFormat/>
+                    </java>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -44,6 +62,11 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>com.diffplug.spotless</groupId>
+            <artifactId>spotless-maven-plugin</artifactId>
+            <version>2.43.0</version>
+        </dependency>
         <!-- AWS Lambda Java Core Library -->
         <dependency>
             <groupId>com.amazonaws</groupId>

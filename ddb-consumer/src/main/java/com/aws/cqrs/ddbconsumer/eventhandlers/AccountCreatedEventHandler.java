@@ -2,41 +2,46 @@ package com.aws.cqrs.ddbconsumer.eventhandlers;
 
 import com.aws.cqrs.application.EventHandler;
 import com.aws.cqrs.domain.AccountCreated;
-import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
-import software.amazon.awssdk.services.dynamodb.model.*;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
+import software.amazon.awssdk.services.dynamodb.model.*;
 
 public class AccountCreatedEventHandler implements EventHandler<AccountCreated> {
-    private final DynamoDbAsyncClient dynamoDbAsyncClient;
+  private final DynamoDbAsyncClient dynamoDbAsyncClient;
 
-    public AccountCreatedEventHandler(DynamoDbAsyncClient dynamoDbAsyncClient) {
-        this.dynamoDbAsyncClient = dynamoDbAsyncClient;
-    }
+  public AccountCreatedEventHandler(DynamoDbAsyncClient dynamoDbAsyncClient) {
+    this.dynamoDbAsyncClient = dynamoDbAsyncClient;
+  }
 
-    @Override
-    public CompletableFuture<Void> handle(AccountCreated event) {
-        Map<String, AttributeValue> attributeValues = new HashMap<>();
-        attributeValues.put(":AccountId", AttributeValue.builder().s(event.getAccountId().toString()).build());
-        attributeValues.put(":FirstName", AttributeValue.builder().s(event.getFirstName()).build());
-        attributeValues.put(":LastName", AttributeValue.builder().s(event.getLastName()).build());
+  @Override
+  public CompletableFuture<Void> handle(AccountCreated event) {
+    Map<String, AttributeValue> attributeValues = new HashMap<>();
+    attributeValues.put(
+        ":AccountId", AttributeValue.builder().s(event.getAccountId().toString()).build());
+    attributeValues.put(":FirstName", AttributeValue.builder().s(event.getFirstName()).build());
+    attributeValues.put(":LastName", AttributeValue.builder().s(event.getLastName()).build());
 
-        Map<String, String> attributeNames = new HashMap<>();
-        attributeNames.put("AccountId", "#AccountId");
-        attributeNames.put("FirstName", "#FirstName");
-        attributeNames.put("LastName", "#LastName");
+    Map<String, String> attributeNames = new HashMap<>();
+    attributeNames.put("AccountId", "#AccountId");
+    attributeNames.put("FirstName", "#FirstName");
+    attributeNames.put("LastName", "#LastName");
 
-        UpdateItemRequest updateItemRequest = UpdateItemRequest.builder()
-                .tableName("Account")
-                .key(Collections.singletonMap("AccountId",AttributeValue.builder().s(event.getAccountId().toString()).build()))
-                .updateExpression("SET #AccountId = :AccountId, #FirstName = :FirstName, #LastName = :LastName")
-                .expressionAttributeNames(attributeNames)
-                .expressionAttributeValues(attributeValues)
-                .build();
+    UpdateItemRequest updateItemRequest =
+        UpdateItemRequest.builder()
+            .tableName("Account")
+            .key(
+                Collections.singletonMap(
+                    "AccountId",
+                    AttributeValue.builder().s(event.getAccountId().toString()).build()))
+            .updateExpression(
+                "SET #AccountId = :AccountId, #FirstName = :FirstName, #LastName = :LastName")
+            .expressionAttributeNames(attributeNames)
+            .expressionAttributeValues(attributeValues)
+            .build();
 
-        return dynamoDbAsyncClient.updateItem(updateItemRequest).thenAccept(x -> {});
-    }
+    return dynamoDbAsyncClient.updateItem(updateItemRequest).thenAccept(x -> {});
+  }
 }
