@@ -48,6 +48,18 @@ class AggregateRootBaseTest {
     }
 
     @Test
+    void when_loadFromHistory_with_null_expect_success() {
+        // Arrange
+        AggregateRootBase aggregateRootBase = new AggregateRootBase() {};
+
+        // Act
+        aggregateRootBase.loadFromHistory(null);
+
+        // Assert
+        assertEquals(0, aggregateRootBase.getExpectedVersion());
+    }
+
+    @Test
     void when_markChangesAsCommitted_expect_no_changes() {
         // Arrange
         AggregateRootBase aggregateRootBase = new AggregateRootBase() {};
