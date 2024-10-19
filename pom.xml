@@ -37,13 +37,41 @@
                         <goals>
                             <goal>apply</goal>
                         </goals>
-                        <phase>validate</phase> <!-- Format during the validate phase -->
+                        <phase>validate</phase>
                     </execution>
                 </executions>
                 <configuration>
                     <java>
                         <googleJavaFormat/>
                     </java>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.8</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <phase>verify</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <excludes>
+                        <exclude>com/aws/cqrs/infrastructure/exceptions/**</exclude>
+                        <exclude>com/aws/cqrs/ddbconsumer/exceptions/**</exclude>
+                        <exclude>com/aws/cqrs/ddbconsumer/DdbConsumerModule.class</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>
@@ -67,14 +95,11 @@
             <artifactId>spotless-maven-plugin</artifactId>
             <version>2.43.0</version>
         </dependency>
-        <!-- AWS Lambda Java Core Library -->
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-core</artifactId>
             <version>1.2.0</version>
         </dependency>
-
-        <!-- AWS Lambda Java Events Library -->
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-events</artifactId>
