@@ -6,10 +6,13 @@ import static org.mockito.Mockito.*;
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.amazonaws.services.lambda.runtime.events.models.dynamodb.AttributeValue;
 import com.amazonaws.services.lambda.runtime.events.models.dynamodb.StreamRecord;
+import com.aws.cqrs.application.OffsetDateTimeDeserializer;
 import com.aws.cqrs.ddbconsumer.exceptions.DeserializationException;
 import com.aws.cqrs.domain.AccountCreated;
 import com.aws.cqrs.infrastructure.messaging.Event;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -17,13 +20,16 @@ import org.junit.jupiter.api.Test;
 
 class DdbEventHandlerTest {
 
-  private final Gson gson = new Gson();
+  private final Gson gson =
+      new GsonBuilder()
+          .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeDeserializer())
+          .create();
 
   @Test
   void when_handleRequest_no_events_expect_success() {
     // Arrange
     EventBus eventBus = mock(EventBus.class);
-    DdbEventHandler ddbEventHandler = new DdbEventHandler(eventBus);
+    DdbEventHandler ddbEventHandler = new DdbEventHandler(eventBus, gson);
     DynamodbEvent dynamodbEvent = new DynamodbEvent();
     dynamodbEvent.setRecords(new ArrayList<>());
 
@@ -38,7 +44,7 @@ class DdbEventHandlerTest {
   void when_handleRequest_expect_success() {
     // Arrange
     EventBus eventBus = mock(EventBus.class);
-    DdbEventHandler ddbEventHandler = new DdbEventHandler(eventBus);
+    DdbEventHandler ddbEventHandler = new DdbEventHandler(eventBus, gson);
     DynamodbEvent dynamodbEvent = new DynamodbEvent();
 
     Map<String, AttributeValue> attributes = new HashMap<>();
@@ -69,7 +75,7 @@ class DdbEventHandlerTest {
   void when_handleRequest_expect_DeserializationException() {
     // Arrange
     EventBus eventBus = mock(EventBus.class);
-    DdbEventHandler ddbEventHandler = new DdbEventHandler(eventBus);
+    DdbEventHandler ddbEventHandler = new DdbEventHandler(eventBus, gson);
     DynamodbEvent dynamodbEvent = new DynamodbEvent();
 
     Map<String, AttributeValue> attributes = new HashMap<>();

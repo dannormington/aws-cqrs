@@ -14,12 +14,13 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 public class DdbEventHandler implements RequestHandler<DynamodbEvent, Void> {
-  private final Gson gson = new Gson();
+  private final Gson gson;
   private final EventBus eventBus;
 
   @Inject
-  public DdbEventHandler(EventBus eventBus) {
+  public DdbEventHandler(EventBus eventBus, Gson gson) {
     this.eventBus = eventBus;
+    this.gson = gson;
   }
 
   @Override
