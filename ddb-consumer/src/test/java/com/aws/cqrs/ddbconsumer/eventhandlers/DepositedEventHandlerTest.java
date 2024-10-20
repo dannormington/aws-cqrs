@@ -1,5 +1,7 @@
 package com.aws.cqrs.ddbconsumer.eventhandlers;
 
+import static com.aws.cqrs.ddbconsumer.eventhandlers.AccountAttributes.BALANCE_ATTRIBUTE;
+import static com.aws.cqrs.ddbconsumer.eventhandlers.AccountAttributes.ID_ATTRIBUTE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -38,15 +40,15 @@ class DepositedEventHandlerTest {
     UpdateItemRequest updateItemRequest = updateItemRequestArgumentCaptor.getValue();
     assertEquals("Account", updateItemRequest.tableName());
     assertEquals(1, updateItemRequest.key().size());
-    assertEquals(event.getAccountId().toString(), updateItemRequest.key().get("AccountId").s());
-    assertEquals("SET #Balance :Balance", updateItemRequest.updateExpression());
+    assertEquals(event.getAccountId().toString(), updateItemRequest.key().get(ID_ATTRIBUTE).s());
+    assertEquals("SET #balance :balance", updateItemRequest.updateExpression());
 
     Map<String, String> attributeNames = updateItemRequest.expressionAttributeNames();
-    assertTrue(attributeNames.containsKey("Balance"));
-    assertEquals("#Balance", attributeNames.get("Balance"));
+    assertTrue(attributeNames.containsKey(BALANCE_ATTRIBUTE));
+    assertEquals("#balance", attributeNames.get(BALANCE_ATTRIBUTE));
 
     Map<String, AttributeValue> attributeValues = updateItemRequest.expressionAttributeValues();
-    assertTrue(attributeValues.containsKey(":Balance"));
-    assertEquals(event.getNewBalance(), new BigDecimal(attributeValues.get(":Balance").n()));
+    assertTrue(attributeValues.containsKey(":balance"));
+    assertEquals(event.getNewBalance(), new BigDecimal(attributeValues.get(":balance").n()));
   }
 }

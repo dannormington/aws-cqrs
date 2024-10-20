@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: EventStore table definition
+
+Resources:
+  EventStore:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: EventStore
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: version
+          AttributeType: N
+        - AttributeName: event
+          AttriuteType: S
+        - AttributeName: kind
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+        - AttributeName: version
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES

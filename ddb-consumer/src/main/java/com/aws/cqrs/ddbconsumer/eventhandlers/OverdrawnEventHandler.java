@@ -1,5 +1,8 @@
 package com.aws.cqrs.ddbconsumer.eventhandlers;
 
+import static com.aws.cqrs.ddbconsumer.eventhandlers.AccountAttributes.BALANCE_ATTRIBUTE;
+import static com.aws.cqrs.ddbconsumer.eventhandlers.AccountAttributes.ID_ATTRIBUTE;
+
 import com.aws.cqrs.application.EventHandler;
 import com.aws.cqrs.domain.Overdrawn;
 import java.util.Collections;
@@ -22,13 +25,13 @@ public class OverdrawnEventHandler implements EventHandler<Overdrawn> {
             .tableName("Account")
             .key(
                 Collections.singletonMap(
-                    "AccountId",
+                    ID_ATTRIBUTE,
                     AttributeValue.builder().s(event.getAccountId().toString()).build()))
-            .updateExpression("SET #Balance :Balance")
-            .expressionAttributeNames(Collections.singletonMap("Balance", "#Balance"))
+            .updateExpression("SET #balance :balance")
+            .expressionAttributeNames(Collections.singletonMap(BALANCE_ATTRIBUTE, "#balance"))
             .expressionAttributeValues(
                 Collections.singletonMap(
-                    ":Balance",
+                    ":balance",
                     AttributeValue.builder().n(event.getNewBalance().toString()).build()))
             .build();
 

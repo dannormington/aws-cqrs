@@ -1,26 +1,22 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: EventTable definition
+Description: Account table definition
 
 Resources:
   EventTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: EventTable
+      TableName: Account
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
-        - AttriuteName: version
-          AttributeType: N
-        - AttributeName: event
-          AttriuteType: S
-        - AttributeName: kind
+        - AttributeName: firstName
           AttributeType: S
+        - AttributeName: lastName
+          AttributeType: S
+        - AttributeName: balance
+          AttributeType: N
       KeySchema:
         - AttributeName: id
           KeyType: HASH
-        - AttributeName: version
-          KeyType: RANGE
       BillingMode: PAY_PER_REQUEST
-      StreamSpecification:
-        StreamViewType: NEW_AND_OLD_IMAGES

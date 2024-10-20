@@ -1,5 +1,7 @@
 package com.aws.cqrs.ddbconsumer.eventhandlers;
 
+import static com.aws.cqrs.ddbconsumer.eventhandlers.AccountAttributes.*;
+
 import com.aws.cqrs.application.EventHandler;
 import com.aws.cqrs.domain.AccountCreated;
 import java.util.Collections;
@@ -19,25 +21,23 @@ public class AccountCreatedEventHandler implements EventHandler<AccountCreated> 
   @Override
   public CompletableFuture<Void> handle(AccountCreated event) {
     Map<String, AttributeValue> attributeValues = new HashMap<>();
-    attributeValues.put(
-        ":AccountId", AttributeValue.builder().s(event.getAccountId().toString()).build());
-    attributeValues.put(":FirstName", AttributeValue.builder().s(event.getFirstName()).build());
-    attributeValues.put(":LastName", AttributeValue.builder().s(event.getLastName()).build());
+    attributeValues.put(":id", AttributeValue.builder().s(event.getAccountId().toString()).build());
+    attributeValues.put(":firstName", AttributeValue.builder().s(event.getFirstName()).build());
+    attributeValues.put(":lastName", AttributeValue.builder().s(event.getLastName()).build());
 
     Map<String, String> attributeNames = new HashMap<>();
-    attributeNames.put("AccountId", "#AccountId");
-    attributeNames.put("FirstName", "#FirstName");
-    attributeNames.put("LastName", "#LastName");
+    attributeNames.put(ID_ATTRIBUTE, "#id");
+    attributeNames.put(FIRST_NAME_ATTRIBUTE, "#firstName");
+    attributeNames.put(LAST_NAME_ATTRIBUTE, "#lastName");
 
     UpdateItemRequest updateItemRequest =
         UpdateItemRequest.builder()
             .tableName("Account")
             .key(
                 Collections.singletonMap(
-                    "AccountId",
+                    ID_ATTRIBUTE,
                     AttributeValue.builder().s(event.getAccountId().toString()).build()))
-            .updateExpression(
-                "SET #AccountId = :AccountId, #FirstName = :FirstName, #LastName = :LastName")
+            .updateExpression("SET #id = :id, #firstName = :firstName, #lastName = :lastName")
             .expressionAttributeNames(attributeNames)
             .expressionAttributeValues(attributeValues)
             .build();
