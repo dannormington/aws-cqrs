@@ -1,5 +1,6 @@
 package com.aws.cqrs.ddbconsumer;
 
+import static com.aws.cqrs.infrastructure.persistence.DynamoDbEventStore.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -49,8 +50,8 @@ class DdbEventHandlerTest {
 
     Map<String, AttributeValue> attributes = new HashMap<>();
     AccountCreated accountCreated = new AccountCreated(UUID.randomUUID(), "John", "Smith");
-    attributes.put("Kind", new AttributeValue().withS(accountCreated.getClass().getName()));
-    attributes.put("Event", new AttributeValue().withS(gson.toJson(accountCreated)));
+    attributes.put(KIND_ATTRIBUTE, new AttributeValue().withS(accountCreated.getClass().getName()));
+    attributes.put(EVENT_ATTRIBUTE, new AttributeValue().withS(gson.toJson(accountCreated)));
 
     List<DynamodbEvent.DynamodbStreamRecord> records = new ArrayList<>();
     DynamodbEvent.DynamodbStreamRecord dynamodbStreamRecord =
@@ -58,7 +59,7 @@ class DdbEventHandlerTest {
     dynamodbStreamRecord.setDynamodb(new StreamRecord().withNewImage(attributes));
     dynamodbStreamRecord
         .getDynamodb()
-        .setKeys(Map.of("Id", new AttributeValue().withS(UUID.randomUUID().toString())));
+        .setKeys(Map.of(ID_ATTRIBUTE, new AttributeValue().withS(UUID.randomUUID().toString())));
     records.add(dynamodbStreamRecord);
     dynamodbEvent.setRecords(records);
 
@@ -80,8 +81,8 @@ class DdbEventHandlerTest {
 
     Map<String, AttributeValue> attributes = new HashMap<>();
     AccountCreated accountCreated = new AccountCreated(UUID.randomUUID(), "John", "Smith");
-    attributes.put("Kind", new AttributeValue().withS("invalid-class-name"));
-    attributes.put("Event", new AttributeValue().withS(gson.toJson(accountCreated)));
+    attributes.put(KIND_ATTRIBUTE, new AttributeValue().withS("invalid-class-name"));
+    attributes.put(EVENT_ATTRIBUTE, new AttributeValue().withS(gson.toJson(accountCreated)));
 
     List<DynamodbEvent.DynamodbStreamRecord> records = new ArrayList<>();
     DynamodbEvent.DynamodbStreamRecord dynamodbStreamRecord =
@@ -89,7 +90,7 @@ class DdbEventHandlerTest {
     dynamodbStreamRecord.setDynamodb(new StreamRecord().withNewImage(attributes));
     dynamodbStreamRecord
         .getDynamodb()
-        .setKeys(Map.of("Id", new AttributeValue().withS(UUID.randomUUID().toString())));
+        .setKeys(Map.of(ID_ATTRIBUTE, new AttributeValue().withS(UUID.randomUUID().toString())));
     records.add(dynamodbStreamRecord);
     dynamodbEvent.setRecords(records);
 

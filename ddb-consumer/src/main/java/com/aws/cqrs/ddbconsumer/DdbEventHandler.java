@@ -1,5 +1,7 @@
 package com.aws.cqrs.ddbconsumer;
 
+import static com.aws.cqrs.infrastructure.persistence.DynamoDbEventStore.*;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
@@ -30,7 +32,8 @@ public class DdbEventHandler implements RequestHandler<DynamodbEvent, Void> {
     Map<String, List<DynamodbEvent.DynamodbStreamRecord>> groupedRecords =
         dynamodbEvent.getRecords().stream()
             .collect(
-                Collectors.groupingBy(record -> record.getDynamodb().getKeys().get("Id").getS()));
+                Collectors.groupingBy(
+                    record -> record.getDynamodb().getKeys().get(ID_ATTRIBUTE).getS()));
 
     // Process each aggregate asynchronously while maintaining order within the aggregate.
     List<CompletableFuture<Void>> futures =
@@ -45,8 +48,8 @@ public class DdbEventHandler implements RequestHandler<DynamodbEvent, Void> {
           records.forEach(
               record -> {
                 Map<String, AttributeValue> attributes = record.getDynamodb().getNewImage();
-                String kind = attributes.get("Kind").getS();
-                String eventData = attributes.get("Event").getS();
+                String kind = attributes.get(KIND_ATTRIBUTE).getS();
+                String eventData = attributes.get(EVENT_ATTRIBUTE).getS();
 
                 try {
                   Event event = (Event) gson.fromJson(eventData, Class.forName(kind));

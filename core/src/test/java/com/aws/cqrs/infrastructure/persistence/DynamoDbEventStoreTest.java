@@ -1,5 +1,6 @@
 package com.aws.cqrs.infrastructure.persistence;
 
+import static com.aws.cqrs.infrastructure.persistence.DynamoDbEventStore.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -38,10 +39,12 @@ class DynamoDbEventStoreTest {
     DynamoDbEventStore eventStore = new DynamoDbEventStore(TABLE_NAME, dynamoDbAsyncClient, gson);
 
     Map<String, AttributeValue> propertyMap = new HashMap<>();
-    propertyMap.put("Id", AttributeValue.builder().s(accountId.toString()).build());
-    propertyMap.put("Version", AttributeValue.builder().n(String.valueOf(1)).build());
-    propertyMap.put("Event", AttributeValue.builder().s(gson.toJson(events.get(0))).build());
-    propertyMap.put("Kind", AttributeValue.builder().s(events.get(0).getClass().getName()).build());
+    propertyMap.put(ID_ATTRIBUTE, AttributeValue.builder().s(accountId.toString()).build());
+    propertyMap.put(VERSION_ATTRIBUTE, AttributeValue.builder().n(String.valueOf(1)).build());
+    propertyMap.put(
+        EVENT_ATTRIBUTE, AttributeValue.builder().s(gson.toJson(events.get(0))).build());
+    propertyMap.put(
+        KIND_ATTRIBUTE, AttributeValue.builder().s(events.get(0).getClass().getName()).build());
 
     Put put = Put.builder().item(propertyMap).tableName(TABLE_NAME).build();
 
@@ -70,10 +73,12 @@ class DynamoDbEventStoreTest {
     DynamoDbEventStore eventStore = new DynamoDbEventStore(TABLE_NAME, dynamoDbAsyncClient, gson);
 
     Map<String, AttributeValue> propertyMap = new HashMap<>();
-    propertyMap.put("Id", AttributeValue.builder().s(accountId.toString()).build());
-    propertyMap.put("Version", AttributeValue.builder().n(String.valueOf(1)).build());
-    propertyMap.put("Event", AttributeValue.builder().s(gson.toJson(events.get(0))).build());
-    propertyMap.put("Kind", AttributeValue.builder().s(events.get(0).getClass().getName()).build());
+    propertyMap.put(ID_ATTRIBUTE, AttributeValue.builder().s(accountId.toString()).build());
+    propertyMap.put(VERSION_ATTRIBUTE, AttributeValue.builder().n(String.valueOf(1)).build());
+    propertyMap.put(
+        EVENT_ATTRIBUTE, AttributeValue.builder().s(gson.toJson(events.get(0))).build());
+    propertyMap.put(
+        KIND_ATTRIBUTE, AttributeValue.builder().s(events.get(0).getClass().getName()).build());
 
     Put put = Put.builder().item(propertyMap).tableName(TABLE_NAME).build();
 
@@ -113,17 +118,18 @@ class DynamoDbEventStoreTest {
     DynamoDbEventStore eventStore = new DynamoDbEventStore(TABLE_NAME, dynamoDbAsyncClient, gson);
 
     Map<String, AttributeValue> accountCreatedMap = new HashMap<>();
-    accountCreatedMap.put("Id", AttributeValue.builder().s(accountId.toString()).build());
-    accountCreatedMap.put("Version", AttributeValue.builder().n(String.valueOf(1)).build());
-    accountCreatedMap.put("Event", AttributeValue.builder().s(gson.toJson(accountCreated)).build());
+    accountCreatedMap.put(ID_ATTRIBUTE, AttributeValue.builder().s(accountId.toString()).build());
+    accountCreatedMap.put(VERSION_ATTRIBUTE, AttributeValue.builder().n(String.valueOf(1)).build());
     accountCreatedMap.put(
-        "Kind", AttributeValue.builder().s(AccountCreated.class.getName()).build());
+        EVENT_ATTRIBUTE, AttributeValue.builder().s(gson.toJson(accountCreated)).build());
+    accountCreatedMap.put(
+        KIND_ATTRIBUTE, AttributeValue.builder().s(AccountCreated.class.getName()).build());
 
     Map<String, AttributeValue> depositedMap = new HashMap<>();
-    depositedMap.put("Id", AttributeValue.builder().s(accountId.toString()).build());
-    depositedMap.put("Version", AttributeValue.builder().n(String.valueOf(2)).build());
-    depositedMap.put("Event", AttributeValue.builder().s(gson.toJson(deposited)).build());
-    depositedMap.put("Kind", AttributeValue.builder().s(Deposited.class.getName()).build());
+    depositedMap.put(ID_ATTRIBUTE, AttributeValue.builder().s(accountId.toString()).build());
+    depositedMap.put(VERSION_ATTRIBUTE, AttributeValue.builder().n(String.valueOf(2)).build());
+    depositedMap.put(EVENT_ATTRIBUTE, AttributeValue.builder().s(gson.toJson(deposited)).build());
+    depositedMap.put(KIND_ATTRIBUTE, AttributeValue.builder().s(Deposited.class.getName()).build());
 
     QueryResponse queryResponse =
         QueryResponse.builder().items(accountCreatedMap, depositedMap).build();
@@ -191,10 +197,11 @@ class DynamoDbEventStoreTest {
     DynamoDbEventStore eventStore = new DynamoDbEventStore(TABLE_NAME, dynamoDbAsyncClient, gson);
 
     Map<String, AttributeValue> accountCreatedMap = new HashMap<>();
-    accountCreatedMap.put("Id", AttributeValue.builder().s(accountId.toString()).build());
-    accountCreatedMap.put("Version", AttributeValue.builder().n(String.valueOf(1)).build());
-    accountCreatedMap.put("Event", AttributeValue.builder().s(gson.toJson(accountCreated)).build());
-    accountCreatedMap.put("Kind", AttributeValue.builder().s("class-not-found").build());
+    accountCreatedMap.put(ID_ATTRIBUTE, AttributeValue.builder().s(accountId.toString()).build());
+    accountCreatedMap.put(VERSION_ATTRIBUTE, AttributeValue.builder().n(String.valueOf(1)).build());
+    accountCreatedMap.put(
+        EVENT_ATTRIBUTE, AttributeValue.builder().s(gson.toJson(accountCreated)).build());
+    accountCreatedMap.put(KIND_ATTRIBUTE, AttributeValue.builder().s("class-not-found").build());
 
     QueryResponse queryResponse = QueryResponse.builder().items(accountCreatedMap).build();
     when(dynamoDbAsyncClient.query(any(QueryRequest.class)))
@@ -219,11 +226,11 @@ class DynamoDbEventStoreTest {
     DynamoDbEventStore eventStore = new DynamoDbEventStore(TABLE_NAME, dynamoDbAsyncClient, gson);
 
     Map<String, AttributeValue> accountCreatedMap = new HashMap<>();
-    accountCreatedMap.put("Id", AttributeValue.builder().s(accountId.toString()).build());
-    accountCreatedMap.put("Version", AttributeValue.builder().n(String.valueOf(1)).build());
-    accountCreatedMap.put("Event", AttributeValue.builder().s("{invalid-json}}").build());
+    accountCreatedMap.put(ID_ATTRIBUTE, AttributeValue.builder().s(accountId.toString()).build());
+    accountCreatedMap.put(VERSION_ATTRIBUTE, AttributeValue.builder().n(String.valueOf(1)).build());
+    accountCreatedMap.put(EVENT_ATTRIBUTE, AttributeValue.builder().s("{invalid-json}}").build());
     accountCreatedMap.put(
-        "Kind", AttributeValue.builder().s(AccountCreated.class.getName()).build());
+        KIND_ATTRIBUTE, AttributeValue.builder().s(AccountCreated.class.getName()).build());
 
     QueryResponse queryResponse = QueryResponse.builder().items(accountCreatedMap).build();
     when(dynamoDbAsyncClient.query(any(QueryRequest.class)))

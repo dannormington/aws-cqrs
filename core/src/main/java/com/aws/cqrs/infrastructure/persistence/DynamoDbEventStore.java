@@ -13,6 +13,11 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
 public class DynamoDbEventStore implements EventStore {
+  public static String ID_ATTRIBUTE = "id";
+  public static String VERSION_ATTRIBUTE = "version";
+  public static String EVENT_ATTRIBUTE = "event";
+  public static String KIND_ATTRIBUTE = "kind";
+
   private final String tableName;
   private final DynamoDbAsyncClient ddbClient;
   private final Gson gson;
@@ -34,11 +39,12 @@ public class DynamoDbEventStore implements EventStore {
       expectedVersion++;
 
       Map<String, AttributeValue> propertyMap = new HashMap<>();
-      propertyMap.put("Id", AttributeValue.builder().s(aggregateId.toString()).build());
+      propertyMap.put(ID_ATTRIBUTE, AttributeValue.builder().s(aggregateId.toString()).build());
       propertyMap.put(
-          "Version", AttributeValue.builder().n(String.valueOf(expectedVersion)).build());
-      propertyMap.put("Event", AttributeValue.builder().s(gson.toJson(event)).build());
-      propertyMap.put("Kind", AttributeValue.builder().s(event.getClass().getName()).build());
+          VERSION_ATTRIBUTE, AttributeValue.builder().n(String.valueOf(expectedVersion)).build());
+      propertyMap.put(EVENT_ATTRIBUTE, AttributeValue.builder().s(gson.toJson(event)).build());
+      propertyMap.put(
+          KIND_ATTRIBUTE, AttributeValue.builder().s(event.getClass().getName()).build());
 
       // Create a new request
       Put put = Put.builder().item(propertyMap).tableName(tableName).build();
@@ -83,7 +89,7 @@ public class DynamoDbEventStore implements EventStore {
             .consistentRead(true)
             .tableName(tableName)
             .keyConditionExpression("#id = :id")
-            .expressionAttributeNames(Collections.singletonMap("#id", "Id"))
+            .expressionAttributeNames(Collections.singletonMap("#id", ID_ATTRIBUTE))
             .expressionAttributeValues(
                 Collections.singletonMap(
                     ":id", AttributeValue.builder().s(aggregateId.toString()).build()))
@@ -119,8 +125,8 @@ public class DynamoDbEventStore implements EventStore {
         .map(
             attributeValueMap -> {
               try {
-                Class<?> aClass = Class.forName(attributeValueMap.get("Kind").s());
-                return (Event) gson.fromJson(attributeValueMap.get("Event").s(), aClass);
+                Class<?> aClass = Class.forName(attributeValueMap.get(KIND_ATTRIBUTE).s());
+                return (Event) gson.fromJson(attributeValueMap.get(EVENT_ATTRIBUTE).s(), aClass);
               } catch (JsonSyntaxException | ClassNotFoundException e) {
                 /*
                  * Throw a hydration exception along with the aggregate id and the message
